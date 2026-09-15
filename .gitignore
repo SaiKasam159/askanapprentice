@@ -24,3 +24,5 @@ dist/
 # Testing
 .nyc_output/
 coverage/
+.vercel
+.env*

@@ -13,7 +13,6 @@ export default function ConfirmCall() {
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState('')
   const [success, setSuccess] = useState(false)
-  const [confirmed, setConfirmed] = useState(false)
 
   const handleConfirm = async () => {
     setError('')
@@ -39,7 +38,10 @@ export default function ConfirmCall() {
       }
 
       setSuccess(true)
-      setConfirmed(true)
+      // Redirect to rating page after 2 seconds
+      setTimeout(() => {
+        router.push(`/rate-call?apprenticeId=${apprenticeId}&name=${encodeURIComponent(apprenticeName || 'the apprentice')}`)
+      }, 2000)
     } catch (err) {
       setError(err instanceof Error ? err.message : 'An error occurred')
     } finally {

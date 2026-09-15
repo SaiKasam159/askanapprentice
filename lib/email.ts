@@ -1,7 +1,16 @@
 import crypto from 'crypto'
 import { Resend } from 'resend'
 
-const resend = new Resend(process.env.RESEND_API_KEY)
+let resendInstance: Resend | null = null
+
+function getResend(): Resend {
+  if (resendInstance) {
+    return resendInstance
+  }
+  const apiKey = process.env.RESEND_API_KEY || ''
+  resendInstance = new Resend(apiKey)
+  return resendInstance
+}
 
 export function generateVerificationToken(): string {
   return crypto.randomBytes(32).toString('hex')
@@ -33,7 +42,7 @@ export async function sendVerificationEmail(
       return { success: true, skipped: true }
     }
 
-    const result = await resend.emails.send({
+    const result = await getResend().emails.send({
       from: 'noreply@askanapprentice.com',
       to: email,
       subject: 'Verify your email - Ask An Apprentice',
@@ -82,7 +91,7 @@ export async function sendGuardianConsentEmail(
       return { success: true, skipped: true }
     }
 
-    const result = await resend.emails.send({
+    const result = await getResend().emails.send({
       from: 'noreply@askanapprentice.com',
       to: guardianEmail,
       subject: 'Parental Consent Required - Ask An Apprentice',
