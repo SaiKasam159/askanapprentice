@@ -30,7 +30,9 @@ Then fill in `.env.local` with your actual credentials:
 
 **Email (Resend):**
 1. Sign up at [resend.com](https://resend.com)
-2. Get your API key and add to `.env.local`
+2. Create a new API key in your Resend dashboard
+3. Add to `.env.local`: `RESEND_API_KEY=your_api_key_here`
+4. In development, verification links are logged to the console if `RESEND_API_KEY` is not set
 
 **NextAuth Secret:**
 ```bash
@@ -53,6 +55,7 @@ CREATE TABLE apprentices (
   bio TEXT,
   linkedin_url TEXT,
   calendly_link TEXT NOT NULL,
+  verified BOOLEAN DEFAULT FALSE,
   average_rating FLOAT DEFAULT 0,
   response_rate FLOAT DEFAULT 0,
   created_at TIMESTAMP DEFAULT NOW(),
@@ -66,6 +69,7 @@ CREATE TABLE students (
   id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
   email TEXT UNIQUE NOT NULL,
   first_name TEXT NOT NULL,
+  email_verified BOOLEAN DEFAULT FALSE,
   age_verified BOOLEAN DEFAULT FALSE,
   target_sector TEXT,
   target_company TEXT,
@@ -74,6 +78,28 @@ CREATE TABLE students (
   guardian_consent_date TIMESTAMP,
   created_at TIMESTAMP DEFAULT NOW(),
   updated_at TIMESTAMP DEFAULT NOW()
+);
+```
+
+**email_verifications table:**
+```sql
+CREATE TABLE email_verifications (
+  id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+  student_id UUID REFERENCES students(id) ON DELETE CASCADE,
+  token TEXT UNIQUE NOT NULL,
+  expires_at TIMESTAMP NOT NULL,
+  created_at TIMESTAMP DEFAULT NOW()
+);
+```
+
+**guardian_consents table:**
+```sql
+CREATE TABLE guardian_consents (
+  id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+  student_id UUID REFERENCES students(id) ON DELETE CASCADE,
+  token TEXT UNIQUE NOT NULL,
+  expires_at TIMESTAMP NOT NULL,
+  created_at TIMESTAMP DEFAULT NOW()
 );
 ```
 
@@ -117,15 +143,30 @@ Visit `http://localhost:3000` and you're ready to build!
 - `/lib` — Utilities and Supabase client setup
 - `/public` — Static assets
 
+## Key Workflows
+
+### Student Journey
+1. Sign up at `/signup` (email, age verification)
+2. Verify email via confirmation link
+3. For under-16: Guardian must provide consent
+4. Access apprentice directory at `/directory`
+5. Book 30-minute call via Calendly link
+6. After call: Confirm completion at `/confirm-call`
+7. Rate apprentice at `/rate-call` (5-star + anonymized feedback)
+8. View apprentice ratings on directory cards and dashboards
+
+### Apprentice Journey
+1. Sign up at `/apprentice/signup` (bio, sector, Calendly link)
+2. Submit for manual review (founder approval required)
+3. Access dashboard at `/apprentice/dashboard` (when approved)
+4. View ratings and feedback from students
+
 ## Next Steps
 
-1. Build student signup page (`/app/signup`)
-2. Build apprentice signup page (`/app/apprentice/signup`)
-3. Build directory page (`/app/directory`)
-4. Set up API routes for database operations
-5. Add authentication flows
-
-See `TODOS.md` for the full checklist.
+See `TODOS.md` for the full checklist. Key P1 priorities:
+- Post-call confirmation & rating forms
+- Manual apprentice verification system
+- Call confirmation emails
 
 ## Legal
 

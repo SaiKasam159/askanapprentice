@@ -16,32 +16,41 @@
 
 ## Student Flows
 - **Priority:** P1
-- [ ] Build /signup page (email, age verification, sector/company selection)
-- [ ] Build /directory page (filter by sector/company, show apprentice cards with Calendly links)
+- [x] Build /signup page (email, age verification, sector/company selection)
+- [x] Build /confirm-email page and email resend flow
+- [x] Implement email confirmation token generation & verification (/verify-email)
+- [x] Set up Resend email sending (confirmation & transactional emails)
+- [x] Build /directory page (filter by sector, show apprentice cards with Calendly links)
+- [x] Implement guardian consent flow (/guardian-consent for under-16s)
+- [x] Build post-call confirmation form (/confirm-call)
+- [x] Build post-call rating form (/rate-call with 5-star + comment)
 - [ ] Add email fallback form (fallback when Calendly fails)
-- [ ] Build post-call confirmation form
-- [ ] Build post-call rating form (5-star + comment)
 
 ## Apprentice Flows
 - **Priority:** P1
-- [ ] Build /apprentice/signup page (LinkedIn OAuth, bio, sector/company)
-- [ ] Build /apprentice/dashboard (view profile, see ratings/comments, manage availability)
+- [x] Build /apprentice/signup page (bio, sector/company, Calendly link)
+- [x] Build /apprentice/dashboard (view profile, see ratings, manual verification pending)
+- [x] Create signup success page with approval workflow info
+- [ ] Set up founder approval/verification system for apprentice profiles
 - [ ] Create call confirmation email flow
 - [ ] Create rating notification flow
+- [ ] Integrate LinkedIn OAuth (future enhancement)
 
 ## Features
 - **Priority:** P2
 - [ ] Implement directory pagination (10 per page, lazy-load)
-- [ ] Add rating aggregation & display
-- [ ] Add mutual confirmation logic (both parties confirm)
-- [ ] Implement anonymized comments visible to apprentices
+- [x] Add rating display (5-star + average on apprentice cards & dashboard)
+- [x] Add rating aggregation (recalculates average_rating on each new submission)
+- [x] Add mutual confirmation logic (both parties confirm before ratings visible)
+- [x] Implement anonymized comments (students don't see who left feedback)
+- [ ] Add email reminders (24h before scheduled calls)
 
 ## Parental Consent (GDPR)
 - **Priority:** P0 (blocking)
-- [ ] Legal review of privacy policy & consent form
-- [ ] Add age-check logic in signup
-- [ ] Add guardian email consent workflow for under-16s
-- [ ] Store consent audit trail
+- [x] Add age-check logic in signup
+- [x] Add guardian email consent workflow for under-16s
+- [x] Store consent audit trail (consent tokens + consent dates)
+- [ ] Legal review of privacy policy & consent form (CRITICAL BLOCKER)
 
 ## Testing & Deployment
 - **Priority:** P3
