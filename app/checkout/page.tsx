@@ -1,14 +1,33 @@
 'use client'
 
-import { useState, Suspense } from 'react'
+import { useState, Suspense, useEffect } from 'react'
 import { useSearchParams } from 'next/navigation'
 import Link from 'next/link'
 import { loadStripe } from '@stripe/stripe-js'
 import { CardElement, Elements, ElementsConsumer } from '@stripe/react-stripe-js'
 
-const stripePromise = typeof window !== 'undefined' && process.env.NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY
-  ? loadStripe(process.env.NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY)
-  : null
+let stripePromise: any = null
+
+function useStripePromise() {
+  const [promise, setPromise] = useState<any>(null)
+
+  useEffect(() => {
+    const fetchKey = async () => {
+      try {
+        const res = await fetch('/api/get-stripe-key')
+        const data = await res.json()
+        if (data.publishableKey) {
+          setPromise(loadStripe(data.publishableKey))
+        }
+      } catch (err) {
+        console.error('Failed to load Stripe key:', err)
+      }
+    }
+    fetchKey()
+  }, [])
+
+  return promise
+}
 
 function CheckoutForm({ duration, price }: { duration: number; price: number }) {
   const [error, setError] = useState<string>('')
@@ -142,13 +161,14 @@ function CheckoutForm({ duration, price }: { duration: number; price: number }) 
 
 function CheckoutContent() {
   const params = useSearchParams()
+  const stripePromise = useStripePromise()
   const duration = params.get('duration') ? parseInt(params.get('duration')!) : 30
   const price = params.get('price') ? parseFloat(params.get('price')!) : 10
 
   if (!stripePromise) {
     return (
       <div className="ac-card ac-stack ac-mt-6" style={{ '--gap': '24px', maxWidth: '28rem' } as any}>
-        <p className="ac-body ac-muted">Stripe is not configured. Please add your Stripe API keys in the <Link href="/setup" className="ac-link">setup page</Link>.</p>
+        <p className="ac-body ac-muted">Loading payment processor...</p>
       </div>
     )
   }
