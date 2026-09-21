@@ -2,7 +2,7 @@ import { createClient, type SupabaseClient } from '@supabase/supabase-js'
 
 let supabaseInstance: SupabaseClient | null = null
 
-export function getSupabase(): SupabaseClient {
+function getSupabase(): SupabaseClient {
   if (supabaseInstance) {
     return supabaseInstance
   }
@@ -18,9 +18,4 @@ export function getSupabase(): SupabaseClient {
   return supabaseInstance
 }
 
-// For backward compatibility with existing imports
-export const supabase = new Proxy({} as SupabaseClient, {
-  get: (_target, prop) => {
-    return getSupabase()[prop as keyof SupabaseClient]
-  },
-})
+export const supabase = getSupabase()
