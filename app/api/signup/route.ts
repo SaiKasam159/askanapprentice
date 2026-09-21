@@ -21,13 +21,8 @@ export async function POST(req: NextRequest) {
       )
     }
 
-    // If under 16, guardian email is required
-    if (!ageVerified && !guardianEmail) {
-      return NextResponse.json(
-        { error: 'Guardian email required for users under 16' },
-        { status: 400 }
-      )
-    }
+    console.log('Supabase URL:', process.env.NEXT_PUBLIC_SUPABASE_URL ? 'Set' : 'NOT SET')
+    console.log('Supabase Key:', process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY ? 'Set' : 'NOT SET')
 
     // Create student record
     const { data: student, error: studentError } = await supabase
@@ -47,9 +42,9 @@ export async function POST(req: NextRequest) {
       .select()
 
     if (studentError) {
-      console.error('Student creation error:', studentError)
+      console.error('Full Supabase error:', JSON.stringify(studentError))
       return NextResponse.json(
-        { error: studentError.message || 'Failed to create student account' },
+        { error: `Supabase error: ${studentError.message}` },
         { status: 500 }
       )
     }
@@ -59,9 +54,9 @@ export async function POST(req: NextRequest) {
       message: 'Account created successfully',
     })
   } catch (error) {
-    console.error('Signup error:', error)
+    console.error('Signup catch error:', error)
     return NextResponse.json(
-      { error: 'Internal server error' },
+      { error: `Error: ${error instanceof Error ? error.message : String(error)}` },
       { status: 500 }
     )
   }
