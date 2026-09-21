@@ -1,24 +1,17 @@
 import { createClient, type SupabaseClient } from '@supabase/supabase-js'
 
-let supabaseInstance: SupabaseClient | null = null
-
-function getSupabase(): SupabaseClient {
-  if (supabaseInstance) {
-    return supabaseInstance
-  }
-
+export function getSupabase(): SupabaseClient {
   const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL
   const supabaseAnonKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY
 
-  console.log('Initializing Supabase with URL:', supabaseUrl?.substring(0, 20) + '...')
-  console.log('Key available:', !!supabaseAnonKey)
+  console.log('Supabase URL:', supabaseUrl)
+  console.log('Supabase Key:', supabaseAnonKey ? supabaseAnonKey.substring(0, 10) + '...' : 'NOT SET')
 
   if (!supabaseUrl || !supabaseAnonKey) {
-    throw new Error(`Missing Supabase environment variables. URL: ${!!supabaseUrl}, Key: ${!!supabaseAnonKey}`)
+    throw new Error(`Missing Supabase vars. URL: ${!!supabaseUrl}, Key: ${!!supabaseAnonKey}`)
   }
 
-  supabaseInstance = createClient(supabaseUrl, supabaseAnonKey)
-  return supabaseInstance
+  return createClient(supabaseUrl, supabaseAnonKey)
 }
 
 export const supabase = getSupabase()

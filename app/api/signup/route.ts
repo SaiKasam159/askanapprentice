@@ -24,21 +24,23 @@ export async function POST(req: NextRequest) {
     console.log('Supabase URL:', process.env.NEXT_PUBLIC_SUPABASE_URL ? 'Set' : 'NOT SET')
     console.log('Supabase Key:', process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY ? 'Set' : 'NOT SET')
 
+    const studentData = {
+      name,
+      email,
+      linkedin_url: linkedinUrl || null,
+      sectors,
+      age_verified: ageVerified,
+      guardian_email: guardianEmail || null,
+      first_call_used: false,
+      created_at: new Date().toISOString(),
+    }
+
+    console.log('Inserting student data:', JSON.stringify(studentData))
+
     // Create student record
     const { data: student, error: studentError } = await supabase
       .from('students')
-      .insert([
-        {
-          name,
-          email,
-          linkedin_url: linkedinUrl || null,
-          sectors,
-          age_verified: ageVerified,
-          guardian_email: guardianEmail || null,
-          first_call_used: false,
-          created_at: new Date().toISOString(),
-        },
-      ])
+      .insert([studentData])
       .select()
 
     if (studentError) {
