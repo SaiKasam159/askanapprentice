@@ -12,6 +12,7 @@ interface Apprentice {
   id: string
   name: string
   apprenticeship_name: string
+  company: string
   sector: string
   linkedin_url: string
   calcom_url: string
@@ -121,7 +122,7 @@ export default function Directory() {
               <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', gap: '16px' }}>
                 <div style={{ flex: 1 }}>
                   <h3 className="ac-h3">{apprentice.name}</h3>
-                  <p className="ac-body ac-muted ac-mt-1">{apprentice.apprenticeship_name}</p>
+                  <p className="ac-body ac-muted ac-mt-1">{apprentice.apprenticeship_name} • {apprentice.company}</p>
                   <div style={{ marginTop: '12px', display: 'flex', gap: '8px', alignItems: 'center', flexWrap: 'wrap' }}>
                     <span className="ac-badge ac-badge--solid">{apprentice.sector}</span>
                     {apprentice.linkedin_url && (

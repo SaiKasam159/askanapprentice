@@ -23,6 +23,7 @@ export default function ApprenticeSignup() {
   const [formData, setFormData] = useState({
     name: '',
     apprenticeshipName: '',
+    company: '',
     sector: '',
     linkedinUrl: '',
     calcomUrl: '',
@@ -42,7 +43,7 @@ export default function ApprenticeSignup() {
     setLoading(true)
 
     try {
-      if (!formData.name || !formData.apprenticeshipName || !formData.sector || !formData.linkedinUrl || !formData.calcomUrl) {
+      if (!formData.name || !formData.apprenticeshipName || !formData.company || !formData.sector || !formData.linkedinUrl || !formData.calcomUrl) {
         throw new Error('All fields are required')
       }
 
@@ -108,6 +109,20 @@ export default function ApprenticeSignup() {
               value={formData.apprenticeshipName}
               onChange={handleChange}
               placeholder="e.g., Investment Banking Apprenticeship"
+              disabled={loading}
+            />
+          </div>
+
+          <div className="ac-field">
+            <label className="ac-label" htmlFor="company">Company</label>
+            <input
+              className="ac-input"
+              id="company"
+              name="company"
+              type="text"
+              value={formData.company}
+              onChange={handleChange}
+              placeholder="e.g., J.P. Morgan"
               disabled={loading}
             />
           </div>

@@ -23,6 +23,7 @@ export default function StudentSignup() {
   const [isUnder16, setIsUnder16] = useState(false)
   const [formData, setFormData] = useState({
     name: '',
+    email: '',
     linkedinUrl: '',
     sectors: [] as string[],
     ageVerified: false,
@@ -64,8 +65,12 @@ export default function StudentSignup() {
     setLoading(true)
 
     try {
-      if (!formData.name || formData.sectors.length === 0) {
+      if (!formData.name || !formData.email || formData.sectors.length === 0) {
         throw new Error('Please fill in all required fields')
+      }
+
+      if (!formData.email.includes('@')) {
+        throw new Error('Please enter a valid email address')
       }
 
       if (formData.linkedinUrl && !formData.linkedinUrl.includes('linkedin.com')) {
@@ -122,6 +127,21 @@ export default function StudentSignup() {
               placeholder="e.g., Alex Johnson"
               disabled={loading}
             />
+          </div>
+
+          <div className="ac-field">
+            <label className="ac-label" htmlFor="email">Email address</label>
+            <input
+              className="ac-input"
+              id="email"
+              name="email"
+              type="email"
+              value={formData.email}
+              onChange={handleChange}
+              placeholder="your@email.com"
+              disabled={loading}
+            />
+            <p className="ac-hint ac-mt-1">We'll send your booking link here</p>
           </div>
 
           <div className="ac-field">

@@ -6,6 +6,7 @@ export async function POST(req: NextRequest) {
     const body = await req.json()
     const {
       name,
+      email,
       linkedinUrl,
       sectors,
       ageVerified,
@@ -13,7 +14,7 @@ export async function POST(req: NextRequest) {
     } = body
 
     // Validate required fields
-    if (!name || !sectors || sectors.length === 0 || !ageVerified) {
+    if (!name || !email || !sectors || sectors.length === 0 || !ageVerified) {
       return NextResponse.json(
         { error: 'Missing required fields' },
         { status: 400 }
@@ -34,6 +35,7 @@ export async function POST(req: NextRequest) {
       .insert([
         {
           name,
+          email,
           linkedin_url: linkedinUrl || null,
           sectors,
           age_verified: ageVerified,

@@ -7,13 +7,14 @@ export async function POST(req: NextRequest) {
     const {
       name,
       apprenticeshipName,
+      company,
       sector,
       linkedinUrl,
       calcomUrl,
     } = body
 
     // Validate required fields
-    if (!name || !apprenticeshipName || !sector || !linkedinUrl || !calcomUrl) {
+    if (!name || !apprenticeshipName || !company || !sector || !linkedinUrl || !calcomUrl) {
       return NextResponse.json(
         { error: 'Missing required fields' },
         { status: 400 }
@@ -38,17 +39,19 @@ export async function POST(req: NextRequest) {
     // Create apprentice record (unverified initially)
     const { data: apprentice, error: apprenticeError } = await supabase
       .from('apprentices')
-      .insert({
-        name,
-        apprenticeship_name: apprenticeshipName,
-        sector,
-        linkedin_url: linkedinUrl,
-        calcom_url: calcomUrl,
-        verified: false,
-        created_at: new Date(),
-      })
+      .insert([
+        {
+          name,
+          apprenticeship_name: apprenticeshipName,
+          company,
+          sector,
+          linkedin_url: linkedinUrl,
+          calcom_url: calcomUrl,
+          verified: false,
+          created_at: new Date().toISOString(),
+        },
+      ])
       .select()
-      .single()
 
     if (apprenticeError) {
       console.error('Apprentice creation error:', apprenticeError)
@@ -59,7 +62,7 @@ export async function POST(req: NextRequest) {
     }
 
     return NextResponse.json({
-      id: apprentice.id,
+      id: apprentice?.[0]?.id,
       message: 'Account created. Your profile will be reviewed before appearing in the directory.',
     })
   } catch (error) {
