@@ -23,11 +23,9 @@ const SECTORS = [
   'Finance',
   'Law',
   'Engineering',
-  'Technology',
+  'Tech',
   'Consulting',
-  'Healthcare',
-  'Manufacturing',
-  'Media',
+  'Other',
 ]
 
 export default function Directory() {
