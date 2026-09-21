@@ -1,29 +1,37 @@
 'use client'
 
 import { useEffect, useState } from 'react'
+import { createClient } from '@supabase/supabase-js'
+
+const supabase = createClient(
+  process.env.NEXT_PUBLIC_SUPABASE_URL || '',
+  process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY || ''
+)
 
 interface Apprentice {
   id: string
-  first_name: string
+  name: string
+  apprenticeship_name: string
   sector: string
-  company: string
-  bio: string
-  average_rating: number
-  calendly_link: string
+  linkedin_url: string
+  calcom_url: string
+  verified: boolean
 }
 
 const SECTORS = [
-  'Tech',
   'Finance',
-  'Engineering',
   'Law',
+  'Engineering',
+  'Technology',
+  'Consulting',
   'Healthcare',
-  'All'
+  'Manufacturing',
+  'Media',
 ]
 
 export default function Directory() {
   const [apprentices, setApprentices] = useState<Apprentice[]>([])
-  const [selectedSector, setSelectedSector] = useState('All')
+  const [selectedSector, setSelectedSector] = useState<string>('')
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState('')
 
@@ -31,129 +39,125 @@ export default function Directory() {
     const fetchApprentices = async () => {
       try {
         setLoading(true)
-        const response = await fetch('/api/apprentices', {
-          method: 'GET',
-          headers: { 'Content-Type': 'application/json' },
-        })
+        let query = supabase
+          .from('apprentices')
+          .select('*')
+          .eq('verified', true)
 
-        if (!response.ok) {
-          throw new Error('Failed to fetch apprentices')
+        if (selectedSector) {
+          query = query.eq('sector', selectedSector)
         }
 
-        const data = await response.json()
-        setApprentices(data.apprentices || [])
+        const { data, error: fetchError } = await query
+
+        if (fetchError) throw fetchError
+        setApprentices(data || [])
+        setError('')
       } catch (err) {
-        setError(err instanceof Error ? err.message : 'An error occurred')
+        setError(err instanceof Error ? err.message : 'Failed to load mentors')
       } finally {
         setLoading(false)
       }
     }
 
     fetchApprentices()
-  }, [])
-
-  const filteredApprentices = selectedSector === 'All'
-    ? apprentices
-    : apprentices.filter(a => a.sector === selectedSector)
+  }, [selectedSector])
 
   return (
-    <div className="py-12">
-      <h1 className="text-4xl font-bold mb-2">Meet Our Apprentices</h1>
-      <p className="text-gray-600 mb-8">
-        Book a 30-minute call with apprentices in your field
-      </p>
+    <div className="ac-container ac-section">
+      <div className="ac-stack" style={{ maxWidth: '56rem', marginBottom: '48px' }}>
+        <h1 className="ac-h1">Browse mentors</h1>
+        <p className="ac-lede">Talk to current apprentices in your target sector. All mentors are verified.</p>
+      </div>
 
-      {/* Sector Filter */}
-      <div className="mb-8">
-        <label className="block text-sm font-medium mb-3">Filter by Sector</label>
-        <div className="flex flex-wrap gap-2">
-          {SECTORS.map(sector => (
+      <div className="ac-stack" style={{ '--gap': '24px', marginBottom: '48px' } as any}>
+        <div>
+          <p className="ac-overline">Filter by sector</p>
+          <div className="ac-segmented ac-mt-3" role="group" aria-label="Filter mentors">
             <button
-              key={sector}
-              onClick={() => setSelectedSector(sector)}
-              className={`px-4 py-2 rounded-lg font-medium transition ${
-                selectedSector === sector
-                  ? 'bg-blue-600 text-white'
-                  : 'bg-gray-200 text-gray-700 hover:bg-gray-300'
-              }`}
+              onClick={() => setSelectedSector('')}
+              aria-pressed={selectedSector === ''}
+              className={selectedSector === '' ? 'is-active' : ''}
             >
-              {sector}
+              All sectors
             </button>
-          ))}
+            {SECTORS.map(sector => (
+              <button
+                key={sector}
+                onClick={() => setSelectedSector(sector)}
+                aria-pressed={selectedSector === sector}
+                className={selectedSector === sector ? 'is-active' : ''}
+              >
+                {sector}
+              </button>
+            ))}
+          </div>
         </div>
       </div>
 
-      {/* Apprentices Grid */}
+      {error && (
+        <div style={{ padding: '12px 16px', borderLeft: '4px solid var(--ac-danger)', background: 'var(--ac-navy-800)', borderRadius: '0 var(--ac-radius-control) var(--ac-radius-control) 0', marginBottom: '24px' }}>
+          <p className="ac-small" style={{ color: 'var(--ac-danger)', margin: 0 }}>{error}</p>
+        </div>
+      )}
+
       {loading ? (
-        <div className="text-center py-12">
-          <p className="text-gray-600">Loading apprentices...</p>
+        <div className="ac-center">
+          <p className="ac-body ac-muted">Loading mentors...</p>
         </div>
-      ) : error ? (
-        <div className="bg-red-50 border border-red-200 text-red-700 px-4 py-3 rounded">
-          {error}
-        </div>
-      ) : filteredApprentices.length === 0 ? (
-        <div className="text-center py-12">
-          <p className="text-gray-600">No apprentices found in this sector yet</p>
+      ) : apprentices.length === 0 ? (
+        <div className="ac-empty" style={{ maxWidth: '56rem' }}>
+          <p className="ac-h3">No mentors in this sector yet</p>
+          <p className="ac-body ac-muted">We're adding mentors regularly. Check back soon or browse other sectors.</p>
         </div>
       ) : (
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-          {filteredApprentices.map(apprentice => (
+        <div className="ac-stack" style={{ '--gap': '16px' } as any}>
+          {apprentices.map((apprentice) => (
             <div
               key={apprentice.id}
-              className="border rounded-lg overflow-hidden hover:shadow-lg transition"
+              className="ac-card"
+              style={{ cursor: 'default' }}
             >
-              <div className="p-6">
-                <h3 className="text-xl font-bold mb-1">{apprentice.first_name}</h3>
-                <p className="text-sm text-gray-600 mb-2">
-                  {apprentice.sector} • {apprentice.company}
-                </p>
-
-                {/* Star Rating */}
-                <div className="flex items-center mb-4">
-                  <div className="flex text-yellow-400">
-                    {[...Array(5)].map((_, i) => (
-                      <span
-                        key={i}
-                        className={i < Math.round(apprentice.average_rating) ? '★' : '☆'}
+              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', gap: '16px' }}>
+                <div style={{ flex: 1 }}>
+                  <h3 className="ac-h3">{apprentice.name}</h3>
+                  <p className="ac-body ac-muted ac-mt-1">{apprentice.apprenticeship_name}</p>
+                  <div style={{ marginTop: '12px', display: 'flex', gap: '8px', alignItems: 'center', flexWrap: 'wrap' }}>
+                    <span className="ac-badge ac-badge--solid">{apprentice.sector}</span>
+                    {apprentice.linkedin_url && (
+                      <a
+                        href={apprentice.linkedin_url}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="ac-link"
+                        style={{ fontSize: '0.875rem' }}
                       >
-                      </span>
-                    ))}
+                        LinkedIn
+                      </a>
+                    )}
                   </div>
-                  <span className="text-sm text-gray-600 ml-2">
-                    ({apprentice.average_rating.toFixed(1)})
-                  </span>
                 </div>
-
-                {apprentice.bio && (
-                  <p className="text-gray-700 text-sm mb-6 line-clamp-3">
-                    {apprentice.bio}
-                  </p>
-                )}
-
-                {/* Book Call Button */}
-                {apprentice.calendly_link ? (
+                <div style={{ flex: 'none' }}>
                   <a
-                    href={apprentice.calendly_link}
+                    href={apprentice.calcom_url}
                     target="_blank"
                     rel="noopener noreferrer"
-                    className="w-full bg-blue-600 text-white py-2 rounded-lg font-semibold hover:bg-blue-700 text-center block"
+                    className="ac-btn ac-btn--secondary"
                   >
-                    Book Call
+                    Book call
                   </a>
-                ) : (
-                  <button
-                    className="w-full bg-gray-300 text-gray-600 py-2 rounded-lg font-semibold cursor-not-allowed"
-                    disabled
-                  >
-                    Unavailable
-                  </button>
-                )}
+                </div>
               </div>
             </div>
           ))}
         </div>
       )}
+
+      <div className="ac-mt-8" style={{ maxWidth: '56rem' }}>
+        <div className="ac-note">
+          <p className="ac-small ac-mt-0"><strong>How it works:</strong> Click "Book call" to schedule a 30-minute free call or 45-minute call (£10). First calls get special pricing. You'll be redirected to the mentor's calendar to pick a time that works.</p>
+        </div>
+      </div>
     </div>
   )
 }

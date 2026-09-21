@@ -5,41 +5,33 @@ export async function POST(req: NextRequest) {
   try {
     const body = await req.json()
     const {
-      firstName,
-      email,
+      name,
+      apprenticeshipName,
       sector,
-      company,
-      bio,
-      calendlyLink,
+      linkedinUrl,
+      calcomUrl,
     } = body
 
     // Validate required fields
-    if (!firstName || !email || !sector || !calendlyLink) {
+    if (!name || !apprenticeshipName || !sector || !linkedinUrl || !calcomUrl) {
       return NextResponse.json(
         { error: 'Missing required fields' },
         { status: 400 }
       )
     }
 
-    // Validate Calendly link
-    if (!calendlyLink.includes('calendly.com')) {
+    // Validate URLs
+    if (!linkedinUrl.includes('linkedin.com')) {
       return NextResponse.json(
-        { error: 'Invalid Calendly URL' },
+        { error: 'Invalid LinkedIn URL' },
         { status: 400 }
       )
     }
 
-    // Check if apprentice already exists
-    const { data: existingApprentice } = await supabase
-      .from('apprentices')
-      .select('id')
-      .eq('email', email)
-      .single()
-
-    if (existingApprentice) {
+    if (!calcomUrl.includes('cal.com')) {
       return NextResponse.json(
-        { error: 'Email already registered' },
-        { status: 409 }
+        { error: 'Invalid Cal.com URL' },
+        { status: 400 }
       )
     }
 
@@ -47,15 +39,13 @@ export async function POST(req: NextRequest) {
     const { data: apprentice, error: apprenticeError } = await supabase
       .from('apprentices')
       .insert({
-        first_name: firstName,
-        email,
+        name,
+        apprenticeship_name: apprenticeshipName,
         sector,
-        company: company || null,
-        bio: bio || null,
-        calendly_link: calendlyLink,
-        verified: false, // Manual verification required
-        average_rating: 0,
-        response_rate: 0,
+        linkedin_url: linkedinUrl,
+        calcom_url: calcomUrl,
+        verified: false,
+        created_at: new Date(),
       })
       .select()
       .single()
@@ -68,11 +58,8 @@ export async function POST(req: NextRequest) {
       )
     }
 
-    // TODO: Send notification email to founder about new apprentice signup
-
     return NextResponse.json({
-      success: true,
-      apprenticeId: apprentice.id,
+      id: apprentice.id,
       message: 'Account created. Your profile will be reviewed before appearing in the directory.',
     })
   } catch (error) {
