@@ -74,8 +74,8 @@ export default function RootLayout({
             </Link>
             <nav>
               <ul className="ac-nav">
-                <li><Link href="/pricing">Pricing</Link></li>
-                <li><Link href="/setup">Setup</Link></li>
+                <li><Link href="/">Home</Link></li>
+                <li><Link href="/directory">Mentors</Link></li>
               </ul>
             </nav>
           </div>

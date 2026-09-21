@@ -31,27 +31,29 @@ export async function POST(req: NextRequest) {
     // Create student record
     const { data: student, error: studentError } = await supabase
       .from('students')
-      .insert({
-        name,
-        linkedin_url: linkedinUrl || null,
-        sectors,
-        age_verified: ageVerified,
-        guardian_email: guardianEmail || null,
-        first_call_used: false,
-      })
+      .insert([
+        {
+          name,
+          linkedin_url: linkedinUrl || null,
+          sectors,
+          age_verified: ageVerified,
+          guardian_email: guardianEmail || null,
+          first_call_used: false,
+          created_at: new Date().toISOString(),
+        },
+      ])
       .select()
-      .single()
 
     if (studentError) {
       console.error('Student creation error:', studentError)
       return NextResponse.json(
-        { error: 'Failed to create student account' },
+        { error: studentError.message || 'Failed to create student account' },
         { status: 500 }
       )
     }
 
     return NextResponse.json({
-      id: student.id,
+      id: student?.[0]?.id,
       message: 'Account created successfully',
     })
   } catch (error) {

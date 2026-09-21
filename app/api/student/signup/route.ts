@@ -1,10 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server'
-import { createClient } from '@supabase/supabase-js'
-
-const supabase = createClient(
-  process.env.NEXT_PUBLIC_SUPABASE_URL || '',
-  process.env.SUPABASE_SERVICE_ROLE_KEY || ''
-)
+import { supabase } from '@/lib/supabase'
 
 export async function POST(request: NextRequest) {
   try {
@@ -22,10 +17,11 @@ export async function POST(request: NextRequest) {
       .insert([
         {
           name,
-          linkedin_url: linkedinUrl,
-          sectors: sectors,
+          linkedin_url: linkedinUrl || null,
+          sectors,
           guardian_email: guardianEmail || null,
-          created_at: new Date(),
+          first_call_used: false,
+          created_at: new Date().toISOString(),
         },
       ])
       .select()
@@ -33,14 +29,14 @@ export async function POST(request: NextRequest) {
     if (error) {
       console.error('Supabase error:', error)
       return NextResponse.json(
-        { error: 'Failed to create account' },
+        { error: error.message || 'Failed to create account' },
         { status: 500 }
       )
     }
 
     return NextResponse.json({
       id: data?.[0]?.id,
-      message: 'Student account created',
+      message: 'Student account created successfully',
     })
   } catch (err: any) {
     console.error('Signup error:', err)
