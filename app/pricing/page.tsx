@@ -4,29 +4,23 @@ import { useState } from 'react'
 import Link from 'next/link'
 
 type CallOption = {
-  id: 'intro' | 'standard' | 'extended'
+  id: 'standard' | 'extended'
   name: string
   duration: number
   price: number
+  firstPrice?: number
   description: string
   popular?: boolean
 }
 
 const callOptions: CallOption[] = [
   {
-    id: 'intro',
-    name: 'Quick Questions',
-    duration: 15,
-    price: 0,
-    description: 'One or two specific questions about your target firm or the application process.',
-    popular: false,
-  },
-  {
     id: 'standard',
     name: 'Deep Dive',
     duration: 30,
     price: 10,
-    description: 'Your application, interview prep, or any part of the process that matters.',
+    firstPrice: 0,
+    description: 'Your application, interview prep, or any part of the process that matters. First call is free.',
     popular: true,
   },
   {
@@ -34,6 +28,7 @@ const callOptions: CallOption[] = [
     name: 'Extended Session',
     duration: 45,
     price: 15,
+    firstPrice: 10,
     description: 'Deep dive plus follow-up. Covers multiple aspects of your journey.',
     popular: false,
   },
@@ -41,16 +36,30 @@ const callOptions: CallOption[] = [
 
 export default function PricingPage() {
   const [selectedOption, setSelectedOption] = useState<string>('standard')
+  const [isFirstCall, setIsFirstCall] = useState(true)
   const selected = callOptions.find(opt => opt.id === selectedOption)
+  const price = isFirstCall && selected?.firstPrice !== undefined ? selected.firstPrice : selected?.price || 0
 
   return (
     <div className="ac-container ac-section">
       <div className="ac-stack" style={{ maxWidth: '56rem', marginBottom: '48px' }}>
         <h1 className="ac-h1">Choose your call</h1>
-        <p className="ac-lede">Pick the length that matches what you need to cover. First intro call is always free.</p>
+        <p className="ac-lede">Pick the length that matches what you need to cover.</p>
       </div>
 
-      <div className="ac-stack" style={{ '--gap': '12px', maxWidth: '56rem' } as any}>
+      <div className="ac-stack" style={{ '--gap': '16px', maxWidth: '56rem' } as any}>
+        <div className="ac-card ac-card--sm" style={{ display: 'flex', gap: '16px', alignItems: 'center' }}>
+          <label style={{ display: 'flex', alignItems: 'center', gap: '8px', cursor: 'pointer', flex: 1 }}>
+            <input
+              type="checkbox"
+              checked={isFirstCall}
+              onChange={(e) => setIsFirstCall(e.target.checked)}
+              style={{ width: '16px', height: '16px', accentColor: 'var(--ac-brass)', cursor: 'pointer' }}
+            />
+            <span className="ac-body">This is my first call</span>
+          </label>
+        </div>
+
         {callOptions.map((option) => (
           <button
             key={option.id}
@@ -68,7 +77,11 @@ export default function PricingPage() {
               </div>
             </div>
             <div className="ac-choice__value">
-              {option.price === 0 ? 'Free' : `£${option.price}`}
+              {isFirstCall && option.firstPrice !== undefined
+                ? option.firstPrice === 0
+                  ? 'Free'
+                  : `£${option.firstPrice}`
+                : `£${option.price}`}
             </div>
           </button>
         ))}
@@ -82,27 +95,33 @@ export default function PricingPage() {
               <p className="ac-body">{selected.name}</p>
               <p className="ac-body">{selected.duration} min</p>
             </div>
+            {isFirstCall && selected.firstPrice !== undefined && (
+              <div className="ac-row ac-row--between" style={{ color: 'var(--ac-brass)' }}>
+                <p className="ac-body">First call offer</p>
+                <p className="ac-body" style={{ color: 'var(--ac-brass)' }}>-£{(selected.price - selected.firstPrice).toFixed(2)}</p>
+              </div>
+            )}
             <div className="ac-row ac-row--between">
-              <p className="ac-body">Platform fee (100%)</p>
-              <p className="ac-body">£{selected.price.toFixed(2)}</p>
+              <p className="ac-body">Platform fee</p>
+              <p className="ac-body">£{price.toFixed(2)}</p>
             </div>
             <div className="ac-divider--strong" style={{ margin: '12px 0' }}></div>
             <div className="ac-row ac-row--between">
               <p className="ac-h4">Total</p>
-              <p className="ac-h4">£{selected.price.toFixed(2)}</p>
+              <p className="ac-h4">£{price.toFixed(2)}</p>
             </div>
           </div>
 
           <Link
-            href={selected.price === 0 ? '/directory' : `/checkout?duration=${selected.duration}&price=${selected.price}`}
+            href={price === 0 ? '/directory' : `/checkout?duration=${selected.duration}&price=${price}`}
             className="ac-btn ac-btn--block ac-btn--lg"
           >
-            {selected.price === 0 ? 'Get started' : 'Continue to payment'}
+            {price === 0 ? 'Get started' : 'Continue to payment'}
           </Link>
 
-          {selected.price > 0 && (
+          {price > 0 && (
             <p className="ac-small ac-muted ac-center">
-              Secure payment with Stripe. 100% of your payment goes to supporting the platform.
+              Secure payment with Stripe. All payment goes to supporting the platform.
             </p>
           )}
         </div>
@@ -110,7 +129,7 @@ export default function PricingPage() {
 
       <div className="ac-mt-8">
         <div className="ac-note">
-          <p className="ac-small ac-mt-0"><strong>Free intros:</strong> One free 15-minute call per account. After that, paid calls support the platform. All apprentices receive their full mentoring time—mentors set their own rates.</p>
+          <p className="ac-small ac-mt-0"><strong>First call offers:</strong> 30-minute calls are free on your first booking. 45-minute calls are £10 on your first booking. After that, standard pricing applies.</p>
         </div>
       </div>
     </div>

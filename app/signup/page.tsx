@@ -5,23 +5,15 @@ import { useRouter } from 'next/navigation'
 import Link from 'next/link'
 
 const SECTORS = [
-  'Tech',
   'Finance',
-  'Engineering',
   'Law',
+  'Engineering',
+  'Technology',
+  'Consulting',
   'Healthcare',
-  'Other'
-]
-
-const COMPANIES = [
-  'Goldman Sachs',
-  'Barclays',
-  'JPMorgan',
-  'Microsoft',
-  'Google',
-  'Amazon',
-  'Deloitte',
-  'Other'
+  'Manufacturing',
+  'Media',
+  'Other',
 ]
 
 export default function StudentSignup() {
@@ -30,10 +22,9 @@ export default function StudentSignup() {
   const [error, setError] = useState('')
   const [isUnder16, setIsUnder16] = useState(false)
   const [formData, setFormData] = useState({
-    email: '',
-    firstName: '',
-    targetSector: '',
-    targetCompany: '',
+    name: '',
+    linkedinUrl: '',
+    sectors: [] as string[],
     ageVerified: false,
     guardianEmail: '',
   })
@@ -45,6 +36,15 @@ export default function StudentSignup() {
     setFormData(prev => ({
       ...prev,
       [name]: type === 'checkbox' ? checked : value
+    }))
+  }
+
+  const handleSectorChange = (sector: string) => {
+    setFormData(prev => ({
+      ...prev,
+      sectors: prev.sectors.includes(sector)
+        ? prev.sectors.filter(s => s !== sector)
+        : [...prev.sectors, sector]
     }))
   }
 
@@ -64,9 +64,12 @@ export default function StudentSignup() {
     setLoading(true)
 
     try {
-      // Validate form
-      if (!formData.email || !formData.firstName || !formData.targetSector) {
+      if (!formData.name || !formData.linkedinUrl || formData.sectors.length === 0) {
         throw new Error('Please fill in all required fields')
+      }
+
+      if (!formData.linkedinUrl.includes('linkedin.com')) {
+        throw new Error('Please enter a valid LinkedIn URL')
       }
 
       if (!formData.ageVerified) {
@@ -88,8 +91,9 @@ export default function StudentSignup() {
         throw new Error(data.error || 'Signup failed')
       }
 
-      // Redirect to email confirmation page
-      router.push(`/confirm-email?email=${encodeURIComponent(formData.email)}`)
+      const data = await response.json()
+      localStorage.setItem('studentId', data.id)
+      router.push('/directory')
     } catch (err) {
       setError(err instanceof Error ? err.message : 'An error occurred')
     } finally {
@@ -98,125 +102,112 @@ export default function StudentSignup() {
   }
 
   return (
-    <div className="max-w-md mx-auto py-12">
-      <h2 className="text-2xl font-bold mb-2">Join Us</h2>
-      <p className="text-gray-600 mb-6">Get guidance from apprentices in your sector</p>
+    <div className="ac-container ac-section">
+      <div className="ac-stack" style={{ maxWidth: '56rem', marginBottom: '48px' }}>
+        <h1 className="ac-h1">Book a call with a mentor</h1>
+        <p className="ac-lede">Tell us about yourself and the sectors you're interested in. We'll help you find the right apprentice to talk to.</p>
+      </div>
 
-      <form onSubmit={handleSubmit} className="space-y-4">
-        {error && (
-          <div className="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded">
-            {error}
-          </div>
-        )}
-
-        <div>
-          <label className="block text-sm font-medium mb-1">Email *</label>
-          <input
-            type="email"
-            name="email"
-            value={formData.email}
-            onChange={handleChange}
-            className="w-full px-4 py-2 border rounded-lg focus:outline-none focus:border-blue-500"
-            placeholder="you@school.ac.uk"
-            required
-          />
-        </div>
-
-        <div>
-          <label className="block text-sm font-medium mb-1">First Name *</label>
-          <input
-            type="text"
-            name="firstName"
-            value={formData.firstName}
-            onChange={handleChange}
-            className="w-full px-4 py-2 border rounded-lg focus:outline-none focus:border-blue-500"
-            placeholder="Your first name"
-            required
-          />
-        </div>
-
-        <div>
-          <label className="block text-sm font-medium mb-1">Target Sector *</label>
-          <select
-            name="targetSector"
-            value={formData.targetSector}
-            onChange={handleChange}
-            className="w-full px-4 py-2 border rounded-lg focus:outline-none focus:border-blue-500"
-            required
-          >
-            <option value="">Select a sector</option>
-            {SECTORS.map(sector => (
-              <option key={sector} value={sector}>{sector}</option>
-            ))}
-          </select>
-        </div>
-
-        <div>
-          <label className="block text-sm font-medium mb-1">Target Company</label>
-          <select
-            name="targetCompany"
-            value={formData.targetCompany}
-            onChange={handleChange}
-            className="w-full px-4 py-2 border rounded-lg focus:outline-none focus:border-blue-500"
-          >
-            <option value="">Select a company (optional)</option>
-            {COMPANIES.map(company => (
-              <option key={company} value={company}>{company}</option>
-            ))}
-          </select>
-        </div>
-
-        <div className="space-y-3">
-          <div className="flex items-center">
+      <form onSubmit={handleSubmit} className="ac-card" style={{ maxWidth: '28rem' }}>
+        <div className="ac-stack" style={{ '--gap': '24px' } as any}>
+          <div className="ac-field">
+            <label className="ac-label" htmlFor="name">Your name</label>
             <input
-              type="checkbox"
-              id="ageVerified"
-              checked={formData.ageVerified}
-              onChange={handleAgeChange}
-              className="w-4 h-4 rounded"
-              required
+              className="ac-input"
+              id="name"
+              name="name"
+              type="text"
+              value={formData.name}
+              onChange={handleChange}
+              placeholder="e.g., Alex Johnson"
+              disabled={loading}
             />
-            <label htmlFor="ageVerified" className="ml-2 text-sm">
-              I confirm I am 16 or older *
-            </label>
           </div>
 
-          {isUnder16 && (
-            <div>
-              <label className="block text-sm font-medium mb-1">Parent/Guardian Email *</label>
+          <div className="ac-field">
+            <label className="ac-label" htmlFor="linkedinUrl">LinkedIn URL</label>
+            <input
+              className="ac-input"
+              id="linkedinUrl"
+              name="linkedinUrl"
+              type="url"
+              value={formData.linkedinUrl}
+              onChange={handleChange}
+              placeholder="https://linkedin.com/in/yourprofile"
+              disabled={loading}
+            />
+            <p className="ac-hint ac-mt-1">Helps mentors learn more about you (optional but recommended)</p>
+          </div>
+
+          <div className="ac-field">
+            <label className="ac-label">Sectors you're interested in</label>
+            <div className="ac-stack" style={{ '--gap': '8px' } as any}>
+              {SECTORS.map(sector => (
+                <label key={sector} className="ac-check" style={{ cursor: 'pointer' }}>
+                  <input
+                    type="checkbox"
+                    checked={formData.sectors.includes(sector)}
+                    onChange={() => handleSectorChange(sector)}
+                    disabled={loading}
+                  />
+                  <span>{sector}</span>
+                </label>
+              ))}
+            </div>
+            {formData.sectors.length === 0 && (
+              <p className="ac-error ac-mt-1">Select at least one sector</p>
+            )}
+          </div>
+
+          <div className="ac-stack" style={{ '--gap': '12px' } as any}>
+            <label style={{ display: 'flex', gap: '12px', cursor: 'pointer', alignItems: 'flex-start' }}>
               <input
-                type="email"
-                name="guardianEmail"
-                value={formData.guardianEmail}
-                onChange={handleChange}
-                className="w-full px-4 py-2 border rounded-lg focus:outline-none focus:border-blue-500"
-                placeholder="parent@email.com"
-                required={isUnder16}
+                type="checkbox"
+                checked={formData.ageVerified}
+                onChange={handleAgeChange}
+                disabled={loading}
+                style={{ marginTop: '4px' }}
               />
-              <p className="text-xs text-gray-600 mt-1">
-                We'll send a consent form to verify your parent/guardian's approval
-              </p>
+              <span className="ac-small">I confirm I am 16 or older</span>
+            </label>
+
+            {isUnder16 && (
+              <div className="ac-field">
+                <label className="ac-label" htmlFor="guardianEmail">Parent/Guardian Email</label>
+                <input
+                  className="ac-input"
+                  id="guardianEmail"
+                  name="guardianEmail"
+                  type="email"
+                  value={formData.guardianEmail}
+                  onChange={handleChange}
+                  placeholder="parent@email.com"
+                  disabled={loading}
+                />
+                <p className="ac-hint ac-mt-1">We'll send a consent form to verify approval</p>
+              </div>
+            )}
+          </div>
+
+          {error && (
+            <div style={{ padding: '12px 16px', borderLeft: '4px solid var(--ac-danger)', background: 'var(--ac-navy-800)', borderRadius: '0 var(--ac-radius-control) var(--ac-radius-control) 0' }}>
+              <p className="ac-small" style={{ color: 'var(--ac-danger)', margin: 0 }}>{error}</p>
             </div>
           )}
+
+          <button
+            type="submit"
+            disabled={loading}
+            className="ac-btn ac-btn--block ac-btn--lg"
+          >
+            {loading ? 'Creating account...' : 'Continue to mentors'}
+          </button>
+
+          <p className="ac-small ac-muted ac-center">
+            Are you an apprentice? <Link href="/apprentice/signup" className="ac-link">Become a mentor</Link>
+          </p>
         </div>
-
-        <button
-          type="submit"
-          disabled={loading}
-          className="w-full bg-blue-600 text-white py-2 rounded-lg font-semibold hover:bg-blue-700 disabled:bg-gray-400"
-        >
-          {loading ? 'Creating account...' : 'Continue'}
-        </button>
       </form>
-
-      <div className="mt-6 text-center text-sm text-gray-600">
-        <p>
-          Are you an apprentice?{' '}
-          <Link href="/apprentice/signup" className="text-blue-600 hover:underline">
-            Sign up here
-          </Link>
-        </p>
-      </div>
     </div>
   )
 }
