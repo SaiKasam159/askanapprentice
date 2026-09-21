@@ -64,11 +64,11 @@ export default function StudentSignup() {
     setLoading(true)
 
     try {
-      if (!formData.name || !formData.linkedinUrl || formData.sectors.length === 0) {
+      if (!formData.name || formData.sectors.length === 0) {
         throw new Error('Please fill in all required fields')
       }
 
-      if (!formData.linkedinUrl.includes('linkedin.com')) {
+      if (formData.linkedinUrl && !formData.linkedinUrl.includes('linkedin.com')) {
         throw new Error('Please enter a valid LinkedIn URL')
       }
 
