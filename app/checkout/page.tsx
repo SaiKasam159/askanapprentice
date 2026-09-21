@@ -6,8 +6,6 @@ import Link from 'next/link'
 import { loadStripe } from '@stripe/stripe-js'
 import { CardElement, Elements, ElementsConsumer } from '@stripe/react-stripe-js'
 
-let stripePromise: any = null
-
 function useStripePromise() {
   const [promise, setPromise] = useState<any>(null)
 
