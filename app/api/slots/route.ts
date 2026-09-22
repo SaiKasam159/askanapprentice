@@ -30,13 +30,23 @@ export async function GET(req: NextRequest) {
       return NextResponse.json({ error: 'This mentor does not offer 45-minute calls' }, { status: 400 })
     }
 
-    const [{ data: windows }, { data: booked }] = await Promise.all([
+    const [{ data: windows, error: windowsError }, { data: booked }] = await Promise.all([
       admin.from('availability').select('day_of_week, start_minute, end_minute').eq('apprentice_id', mentorId),
       admin.from('bookings').select('scheduled_at, call_duration')
         .eq('apprentice_id', mentorId)
         .in('status', ['pending_payment', 'confirmed'])
         .gte('scheduled_at', new Date().toISOString()),
     ])
+
+    // Without this, a broken query looks identical to a mentor who has simply
+    // not set any availability.
+    if (windowsError) {
+      console.error('Availability lookup failed:', windowsError)
+      return NextResponse.json(
+        { error: `Could not load availability: ${windowsError.message}` },
+        { status: 500 }
+      )
+    }
 
     const slots = generateSlots({
       windows: windows ?? [],

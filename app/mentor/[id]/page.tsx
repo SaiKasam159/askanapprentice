@@ -17,6 +17,12 @@ interface Mentor {
   total_ratings?: number
 }
 
+const LinkedInMark = () => (
+  <svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true" style={{ flex: 'none' }}>
+    <path d="M20.45 20.45h-3.56v-5.57c0-1.33-.03-3.04-1.85-3.04-1.86 0-2.14 1.45-2.14 2.94v5.67H9.35V9h3.41v1.56h.05a3.74 3.74 0 0 1 3.37-1.85c3.6 0 4.27 2.37 4.27 5.46v6.28zM5.34 7.43a2.07 2.07 0 1 1 0-4.13 2.07 2.07 0 0 1 0 4.13zM7.12 20.45H3.56V9h3.56v11.45zM22.22 0H1.77C.79 0 0 .77 0 1.73v20.54C0 23.23.79 24 1.77 24h20.45c.98 0 1.78-.77 1.78-1.73V1.73C24 .77 23.2 0 22.22 0z" />
+  </svg>
+)
+
 export default function MentorProfile() {
   const params = useParams()
   const mentorId = params?.id as string
@@ -73,13 +79,25 @@ export default function MentorProfile() {
 
       <div style={{ display: 'grid', gridTemplateColumns: '1fr auto', gap: '32px', alignItems: 'start', maxWidth: '56rem' }}>
         <div>
-          <h1 className="ac-h1">{mentor.name}</h1>
-          <p className="ac-lede ac-mt-2">{mentor.apprenticeship_name} at {mentor.company}</p>
-
-          <div style={{ marginTop: '24px', display: 'flex', gap: '12px', alignItems: 'center' }}>
+          <div style={{ display: 'flex', alignItems: 'center', gap: '12px', flexWrap: 'wrap' }}>
+            <h1 className="ac-h1" style={{ margin: 0 }}>{mentor.name}</h1>
             <span className="ac-badge ac-badge--solid">{mentor.sector}</span>
             {mentor.verified && <span className="ac-verified">✓ Verified</span>}
           </div>
+          <p className="ac-lede ac-mt-2">{mentor.apprenticeship_name} at {mentor.company}</p>
+
+          {mentor.linkedin_url && (
+            <a
+              href={mentor.linkedin_url}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="ac-btn ac-btn--secondary ac-mt-4"
+              style={{ display: 'inline-flex', alignItems: 'center', gap: '10px', color: '#0A66C2' }}
+            >
+              <LinkedInMark />
+              View {mentor.name.split(' ')[0]}'s LinkedIn
+            </a>
+          )}
 
           {mentor.average_rating && (
             <div style={{ marginTop: '24px' }}>
@@ -103,14 +121,6 @@ export default function MentorProfile() {
               {mentor.name} is a verified mentor currently working as {mentor.apprenticeship_name} at {mentor.company}.
               They specialize in {mentor.sector.toLowerCase()} and are available for mentoring calls.
             </p>
-
-            {mentor.linkedin_url && (
-              <div style={{ marginTop: '16px' }}>
-                <a href={mentor.linkedin_url} target="_blank" rel="noopener noreferrer" className="ac-link">
-                  View LinkedIn profile
-                </a>
-              </div>
-            )}
           </div>
         </div>
 

@@ -28,3 +28,4 @@ coverage/
 .env*
 .slots-test/
 .email-test/
+.gstack/

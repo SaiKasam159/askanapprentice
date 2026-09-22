@@ -1,6 +1,6 @@
 import type { Metadata } from 'next'
-import Link from 'next/link'
 import { ToastContainer } from './components/ToastContainer'
+import { SiteHeader } from './components/SiteHeader'
 import './globals.css'
 
 export const dynamic = 'force-dynamic'
@@ -10,53 +10,70 @@ export const metadata: Metadata = {
   description: 'Book calls with current apprentices for guidance and advice',
 }
 
-const Logo = () => (
-  <svg width="28" height="28" viewBox="0 0 28 28" fill="none" xmlns="http://www.w3.org/2000/svg">
-    <defs>
-      <linearGradient id="ac-brass-mark" x1="0" y1="0" x2="1" y2="1">
-        <stop offset="0" stopColor="#E3B872" />
-        <stop offset="1" stopColor="#C99A4E" />
-      </linearGradient>
-    </defs>
-    <rect width="28" height="28" rx="8" fill="url(#ac-brass-mark)" />
-    <path d="M8 20 L14 7 L20 20" stroke="#08152A" strokeWidth="2.6" strokeLinecap="round" strokeLinejoin="round" fill="none" />
-    <circle cx="14" cy="16.5" r="1.7" fill="#08152A" />
-  </svg>
-)
-
 const navStyle = `
+  /* Line the header up with the page content, which is a centred 72rem column. */
+  .ac-header__inner {
+    width: 100%;
+    max-width: var(--ac-container);
+    margin-inline: auto;
+  }
+
   .ac-nav {
     list-style: none;
     margin: 0;
     padding: 0;
     display: flex;
+    align-items: center;
     gap: 4px;
   }
 
-  .ac-nav a {
+  .ac-nav a,
+  .ac-nav__button {
     display: inline-flex;
     align-items: center;
     height: 40px;
     padding: 0 12px;
+    border: 0;
     border-radius: 10px;
+    background: none;
+    font: inherit;
     font-size: .875rem;
     font-weight: 500;
     color: var(--ac-text-soft);
     text-decoration: none;
+    cursor: pointer;
     transition: background-color .15s, color .15s;
   }
 
-  .ac-nav a:hover {
+  .ac-nav a:hover,
+  .ac-nav__button:hover {
     background: var(--ac-navy-700);
     color: var(--ac-text);
   }
+
+  .ac-nav a[aria-current="page"] {
+    color: var(--ac-text);
+    background: var(--ac-navy-700);
+  }
+
+  .ac-nav a.ac-nav__cta {
+    background: var(--ac-brass);
+    color: var(--ac-navy-900);
+    font-weight: 600;
+  }
+
+  .ac-nav a.ac-nav__cta:hover {
+    background: var(--ac-brass-strong, #C99A4E);
+    color: var(--ac-navy-900);
+  }
+
+  @media (max-width: 560px) {
+    .ac-nav a,
+    .ac-nav__button { padding: 0 8px; font-size: .8125rem; }
+  }
 `
 
-export default function RootLayout({
-  children,
-}: {
-  children: React.ReactNode
-}) {
+export default function RootLayout({ children }: { children: React.ReactNode }) {
   return (
     <html lang="en">
       <head>
@@ -67,23 +84,8 @@ export default function RootLayout({
       </head>
       <body className="ac">
         <a className="ac-skip" href="#main">Skip to content</a>
-        <header className="ac-header">
-          <div className="ac-header__inner">
-            <Link href="/" className="ac-brand">
-              <span className="ac-brand__mark"><Logo /></span>
-              ApprentaCall
-            </Link>
-            <nav>
-              <ul className="ac-nav">
-                <li><Link href="/">Home</Link></li>
-                <li><Link href="/directory">Mentors</Link></li>
-              </ul>
-            </nav>
-          </div>
-        </header>
-        <main id="main">
-          {children}
-        </main>
+        <SiteHeader />
+        <main id="main">{children}</main>
         <ToastContainer />
       </body>
     </html>

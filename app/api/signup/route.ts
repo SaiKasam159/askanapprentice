@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { getSupabaseAdmin } from '@/lib/supabase'
+import { createSessionToken } from '@/lib/session'
 
 export async function POST(req: NextRequest) {
   try {
@@ -57,7 +58,7 @@ export async function POST(req: NextRequest) {
       )
     }
 
-    return NextResponse.json({ id: student.id, message: 'Account created successfully' })
+    return NextResponse.json({ id: student.id, token: createSessionToken(student.id, 'student'), message: 'Account created successfully' })
   } catch (error) {
     console.error('Student signup error:', error)
     return NextResponse.json(

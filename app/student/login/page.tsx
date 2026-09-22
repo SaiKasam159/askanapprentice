@@ -1,12 +1,13 @@
 'use client'
 
 import { useState } from 'react'
-import { useRouter } from 'next/navigation'
+import { useRouter, useSearchParams } from 'next/navigation'
 import Link from 'next/link'
 import { saveSession } from '@/lib/session-client'
 
 export default function StudentLogin() {
   const router = useRouter()
+  const searchParams = useSearchParams()
   const [email, setEmail] = useState('')
   const [password, setPassword] = useState('')
   const [loading, setLoading] = useState(false)
@@ -39,7 +40,7 @@ export default function StudentLogin() {
 
       const data = await response.json()
       saveSession(data.token, data.user.profileId, 'student')
-      router.push('/student/dashboard')
+      router.push(searchParams.get('next') || '/student/dashboard')
     } catch (err) {
       setError(err instanceof Error ? err.message : 'An error occurred')
     } finally {

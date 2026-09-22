@@ -3,6 +3,7 @@
 import { useState } from 'react'
 import { useRouter } from 'next/navigation'
 import Link from 'next/link'
+import { saveSession } from '@/lib/session-client'
 
 const SECTORS = [
   'Finance',
@@ -84,7 +85,7 @@ export default function ApprenticeSignup() {
       }
 
       const data = await response.json()
-      localStorage.setItem('apprenticeId', data.id)
+      saveSession(data.token, data.id, 'apprentice')
       router.push('/apprentice/signup-success')
     } catch (err) {
       setError(err instanceof Error ? err.message : 'An error occurred')

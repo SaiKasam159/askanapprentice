@@ -1,13 +1,15 @@
 'use client'
 
 import { useState } from 'react'
-import { useRouter } from 'next/navigation'
+import { useRouter, useSearchParams } from 'next/navigation'
 import Link from 'next/link'
+import { saveSession } from '@/lib/session-client'
 
 const SECTORS = ['Finance', 'Law', 'Engineering', 'Tech', 'Consulting', 'Other']
 
 export default function StudentSignup() {
   const router = useRouter()
+  const searchParams = useSearchParams()
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState('')
   const [isUnder16, setIsUnder16] = useState(false)
@@ -88,8 +90,9 @@ export default function StudentSignup() {
       }
 
       const data = await response.json()
-      localStorage.setItem('studentId', data.id)
-      router.push('/signup-success')
+      saveSession(data.token, data.id, 'student')
+      const next = searchParams.get('next')
+      router.push(next ? `/signup-success?next=${encodeURIComponent(next)}` : '/signup-success')
     } catch (err) {
       setError(err instanceof Error ? err.message : 'An error occurred')
     } finally {

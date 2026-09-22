@@ -1,8 +1,11 @@
 'use client'
 
 import Link from 'next/link'
+import { useSearchParams } from 'next/navigation'
 
 export default function SignupSuccess() {
+  const next = useSearchParams().get('next')
+
   return (
     <div className="ac-container ac-section">
       <div style={{ maxWidth: '36rem', margin: '0 auto', textAlign: 'center' }}>
@@ -12,7 +15,9 @@ export default function SignupSuccess() {
           <p className="ac-lede ac-mt-4">Welcome to ApprentaCall. You're all set to start booking mentors.</p>
 
           <div className="ac-stack ac-mt-6" style={{ '--gap': '12px' } as any}>
-            <Link href="/directory" className="ac-btn ac-btn--block ac-btn--lg">Browse mentors</Link>
+            <Link href={next || '/directory'} className="ac-btn ac-btn--block ac-btn--lg">
+              {next ? 'Continue to your booking' : 'Browse mentors'}
+            </Link>
             <Link href="/student/dashboard" className="ac-btn ac-btn--secondary ac-btn--block">Go to your dashboard</Link>
           </div>
 

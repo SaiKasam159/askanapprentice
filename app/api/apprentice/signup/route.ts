@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { getSupabaseAdmin } from '@/lib/supabase'
+import { createSessionToken } from '@/lib/session'
 
 export async function POST(req: NextRequest) {
   try {
@@ -73,6 +74,7 @@ export async function POST(req: NextRequest) {
 
     return NextResponse.json({
       id: apprentice.id,
+      token: createSessionToken(apprentice.id, 'apprentice'),
       message: 'Account created. Your profile will be reviewed before appearing in the directory.',
     })
   } catch (error) {

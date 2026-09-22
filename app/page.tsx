@@ -3,10 +3,16 @@ import Link from 'next/link'
 export default function Home() {
   return (
     <div className="ac-container ac-section">
-      <div className="ac-stack" style={{ maxWidth: '56rem', marginBottom: '64px' }}>
+      <div
+        className="ac-stack"
+        style={{ maxWidth: '48rem', margin: '0 auto 64px', textAlign: 'center' }}
+      >
         <p className="ac-eyebrow">Real advice from real apprentices</p>
         <h1 className="ac-h1">Get insider guidance from someone living the apprenticeship path.</h1>
-        <p className="ac-lede">Talk to degree apprentices at your target firms. They've sat the same tests and interviews recently. Get the real story, not the recruiter version.</p>
+        <p className="ac-lede" style={{ margin: '0 auto' }}>
+          Talk to degree apprentices at your target firms. They've sat the same tests and
+          interviews recently. Get the real story, not the recruiter version.
+        </p>
       </div>
 
       <div className="ac-grid ac-mt-6" style={{ '--cols': '1', '--cols-sm': '2' } as any}>
@@ -33,7 +39,7 @@ export default function Home() {
             <div>
               <p className="ac-overline">Already an apprentice?</p>
               <h3 className="ac-h2 ac-mt-2">Become a mentor</h3>
-              <p className="ac-body ac-mt-2">Share your apprenticeship experience and earn money helping the next generation. Set your own schedule with Cal.com.</p>
+              <p className="ac-body ac-mt-2">Share your apprenticeship experience and earn money helping the next generation. You set the hours you are free, and students book inside them.</p>
             </div>
             <div className="ac-stack" style={{ '--gap': '8px' } as any}>
               <Link href="/apprentice/signup" className="ac-btn ac-btn--secondary ac-btn--lg ac-btn--block">

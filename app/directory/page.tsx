@@ -22,6 +22,12 @@ const SECTORS = [
   'Other',
 ]
 
+const LinkedInMark = () => (
+  <svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true">
+    <path d="M20.45 20.45h-3.56v-5.57c0-1.33-.03-3.04-1.85-3.04-1.86 0-2.14 1.45-2.14 2.94v5.67H9.35V9h3.41v1.56h.05a3.74 3.74 0 0 1 3.37-1.85c3.6 0 4.27 2.37 4.27 5.46v6.28zM5.34 7.43a2.07 2.07 0 1 1 0-4.13 2.07 2.07 0 0 1 0 4.13zM7.12 20.45H3.56V9h3.56v11.45zM22.22 0H1.77C.79 0 0 .77 0 1.73v20.54C0 23.23.79 24 1.77 24h20.45c.98 0 1.78-.77 1.78-1.73V1.73C24 .77 23.2 0 22.22 0z" />
+  </svg>
+)
+
 export default function Directory() {
   const [apprentices, setApprentices] = useState<Apprentice[]>([])
   const [selectedSector, setSelectedSector] = useState<string>('')
@@ -115,8 +121,9 @@ export default function Directory() {
                         target="_blank"
                         rel="noopener noreferrer"
                         className="ac-link"
-                        style={{ fontSize: '0.875rem' }}
+                        style={{ fontSize: '0.875rem', display: 'inline-flex', alignItems: 'center', gap: '6px', color: '#0A66C2' }}
                       >
+                        <LinkedInMark />
                         LinkedIn
                       </a>
                     )}
@@ -135,7 +142,7 @@ export default function Directory() {
                     className="ac-btn ac-btn--primary ac-btn--block"
                     style={{ whiteSpace: 'nowrap', fontSize: '0.875rem' }}
                   >
-                    📅 Book 30 min
+                    Book 30 min • Free
                   </a>
                   {apprentice.accepts_45min_calls && (
                     <a
@@ -143,7 +150,7 @@ export default function Directory() {
                       className="ac-btn ac-btn--secondary ac-btn--block"
                       style={{ whiteSpace: 'nowrap', fontSize: '0.875rem' }}
                     >
-                      📅 Book 45 min
+                      Book 45 min • £10
                     </a>
                   )}
                 </div>
@@ -155,7 +162,7 @@ export default function Directory() {
 
       <div className="ac-mt-8" style={{ maxWidth: '56rem' }}>
         <div className="ac-note">
-          <p className="ac-small ac-mt-0"><strong>How it works:</strong> Click "Book call" to schedule a 30-minute free call or 45-minute call (£10). First calls get special pricing. You'll be redirected to the mentor's calendar to pick a time that works.</p>
+          <p className="ac-small ac-mt-0"><strong>How it works:</strong> Pick a mentor and choose a time from their availability. 30-minute intro calls are free; 45-minute calls are £10 and paid at booking. You'll get a confirmation email with the link to join.</p>
         </div>
       </div>
     </div>

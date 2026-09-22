@@ -19,10 +19,19 @@ export default function BookingPage() {
   const [duration, setDuration] = useState<30 | 45>(30)
   const [slots, setSlots] = useState<string[]>([])
   const [selected, setSelected] = useState('')
+  const [role, setRole] = useState<string | null>(null)
+  const [checkedAuth, setCheckedAuth] = useState(false)
   const [loadingMentor, setLoadingMentor] = useState(true)
   const [loadingSlots, setLoadingSlots] = useState(false)
   const [submitting, setSubmitting] = useState(false)
   const [error, setError] = useState('')
+
+  useEffect(() => {
+    // The API rejects this too, but nobody should get as far as picking a slot
+    // before finding out they need an account.
+    setRole(localStorage.getItem('userType'))
+    setCheckedAuth(true)
+  }, [])
 
   useEffect(() => {
     if (!mentorId) { router.push('/directory'); return }
@@ -54,11 +63,6 @@ export default function BookingPage() {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
     if (!selected) { setError('Pick a time first'); return }
-
-    if (!localStorage.getItem('studentId')) {
-      router.push('/student/login')
-      return
-    }
 
     setError('')
     setSubmitting(true)
@@ -95,8 +99,37 @@ export default function BookingPage() {
     }
   }
 
-  if (loadingMentor) return <div className="ac-container ac-section"><p className="ac-muted">Loading mentor…</p></div>
+  if (!checkedAuth || loadingMentor) {
+    return <div className="ac-container ac-section"><p className="ac-muted">Loading…</p></div>
+  }
   if (!mentor) return <div className="ac-container ac-section"><p className="ac-muted">Mentor not found</p></div>
+
+  if (role !== 'student') {
+    const next = encodeURIComponent(`/booking?mentorId=${mentorId}`)
+    return (
+      <div className="ac-container ac-section">
+        <div style={{ maxWidth: '36rem', margin: '0 auto', textAlign: 'center' }}>
+          <h1 className="ac-h1">{role === 'apprentice' ? 'Mentors cannot book calls' : 'Sign in to book'}</h1>
+          <p className="ac-lede ac-mt-2">
+            {role === 'apprentice'
+              ? `You're signed in as a mentor. Booking a call with ${mentor.name} needs a student account.`
+              : `Booking a call with ${mentor.name} takes a student account. It's free, and your first 30-minute call is too.`}
+          </p>
+          <div className="ac-stack ac-mt-6" style={{ '--gap': '12px' } as any}>
+            {role === 'apprentice' ? (
+              <Link href="/apprentice/dashboard" className="ac-btn ac-btn--block ac-btn--lg">Back to your dashboard</Link>
+            ) : (
+              <>
+                <Link href={`/signup?next=${next}`} className="ac-btn ac-btn--block ac-btn--lg">Create a student account</Link>
+                <Link href={`/student/login?next=${next}`} className="ac-btn ac-btn--secondary ac-btn--block">I already have one</Link>
+              </>
+            )}
+            <Link href="/directory" className="ac-link ac-small">Back to mentors</Link>
+          </div>
+        </div>
+      </div>
+    )
+  }
 
   // Slots arrive as UTC instants; group them by the student's own local date.
   const byDate = slots.reduce<Record<string, string[]>>((acc, iso) => {
