@@ -19,6 +19,8 @@ export default function ApprenticeSignup() {
   const [error, setError] = useState('')
   const [formData, setFormData] = useState({
     name: '',
+    email: '',
+    password: '',
     apprenticeshipName: '',
     company: '',
     sector: '',
@@ -42,8 +44,16 @@ export default function ApprenticeSignup() {
     setLoading(true)
 
     try {
-      if (!formData.name || !formData.apprenticeshipName || !formData.company || !formData.sector || !formData.linkedinUrl || !formData.calendlyUrl30) {
+      if (!formData.name || !formData.email || !formData.password || !formData.apprenticeshipName || !formData.company || !formData.sector || !formData.linkedinUrl || !formData.calendlyUrl30) {
         throw new Error('All fields are required')
+      }
+
+      if (!formData.email.includes('@')) {
+        throw new Error('Please enter a valid email address')
+      }
+
+      if (formData.password.length < 8) {
+        throw new Error('Password must be at least 8 characters')
       }
 
       if (!formData.linkedinUrl.includes('linkedin.com')) {
@@ -104,6 +114,35 @@ export default function ApprenticeSignup() {
               placeholder="e.g., Priya Raman"
               disabled={loading}
             />
+          </div>
+
+          <div className="ac-field">
+            <label className="ac-label" htmlFor="email">Email address</label>
+            <input
+              className="ac-input"
+              id="email"
+              name="email"
+              type="email"
+              value={formData.email}
+              onChange={handleChange}
+              placeholder="your@email.com"
+              disabled={loading}
+            />
+          </div>
+
+          <div className="ac-field">
+            <label className="ac-label" htmlFor="password">Password</label>
+            <input
+              className="ac-input"
+              id="password"
+              name="password"
+              type="password"
+              value={formData.password}
+              onChange={handleChange}
+              placeholder="••••••••"
+              disabled={loading}
+            />
+            <p className="ac-hint ac-mt-1">At least 8 characters</p>
           </div>
 
           <div className="ac-field">

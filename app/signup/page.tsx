@@ -14,6 +14,7 @@ export default function StudentSignup() {
   const [formData, setFormData] = useState({
     name: '',
     email: '',
+    password: '',
     linkedinUrl: '',
     sectors: [] as string[],
     ageVerified: false,
@@ -51,8 +52,12 @@ export default function StudentSignup() {
     setLoading(true)
 
     try {
-      if (!formData.name || !formData.email || formData.sectors.length === 0) {
+      if (!formData.name || !formData.email || !formData.password || formData.sectors.length === 0) {
         throw new Error('Please fill in all required fields')
+      }
+
+      if (formData.password.length < 8) {
+        throw new Error('Password must be at least 8 characters')
       }
 
       if (!formData.email.includes('@')) {
@@ -110,6 +115,12 @@ export default function StudentSignup() {
             <label className="ac-label" htmlFor="email">Email address</label>
             <input className="ac-input" id="email" name="email" type="email" value={formData.email} onChange={handleChange} placeholder="your@email.com" disabled={loading} />
             <p className="ac-hint ac-mt-1">We'll send your booking link here</p>
+          </div>
+
+          <div className="ac-field">
+            <label className="ac-label" htmlFor="password">Password</label>
+            <input className="ac-input" id="password" name="password" type="password" value={formData.password} onChange={handleChange} placeholder="••••••••" disabled={loading} />
+            <p className="ac-hint ac-mt-1">At least 8 characters</p>
           </div>
 
           <div className="ac-field">

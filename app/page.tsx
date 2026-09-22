@@ -17,9 +17,14 @@ export default function Home() {
               <h3 className="ac-h2 ac-mt-2">Book a call</h3>
               <p className="ac-body ac-mt-2">Get advice from current apprentices in your target sectors. 30-minute calls are free on your first booking.</p>
             </div>
-            <Link href="/signup" className="ac-btn ac-btn--lg ac-btn--block">
-              Get started
-            </Link>
+            <div className="ac-stack" style={{ '--gap': '8px' } as any}>
+              <Link href="/signup" className="ac-btn ac-btn--lg ac-btn--block">
+                Sign up as student
+              </Link>
+              <p className="ac-small ac-center ac-muted" style={{ margin: 0 }}>
+                Already have an account? <Link href="/student/login" className="ac-link">Log in</Link>
+              </p>
+            </div>
           </div>
         </div>
 
@@ -30,9 +35,14 @@ export default function Home() {
               <h3 className="ac-h2 ac-mt-2">Become a mentor</h3>
               <p className="ac-body ac-mt-2">Share your apprenticeship experience and earn money helping the next generation. Set your own schedule with Cal.com.</p>
             </div>
-            <Link href="/apprentice/signup" className="ac-btn ac-btn--secondary ac-btn--lg ac-btn--block">
-              Become a mentor
-            </Link>
+            <div className="ac-stack" style={{ '--gap': '8px' } as any}>
+              <Link href="/apprentice/signup" className="ac-btn ac-btn--secondary ac-btn--lg ac-btn--block">
+                Sign up as mentor
+              </Link>
+              <p className="ac-small ac-center ac-muted" style={{ margin: 0 }}>
+                Already have an account? <Link href="/apprentice/login" className="ac-link">Log in</Link>
+              </p>
+            </div>
           </div>
         </div>
       </div>

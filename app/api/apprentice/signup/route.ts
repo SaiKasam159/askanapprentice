@@ -6,6 +6,8 @@ export async function POST(req: NextRequest) {
     const body = await req.json()
     const {
       name,
+      email,
+      password,
       apprenticeshipName,
       company,
       sector,
@@ -16,9 +18,23 @@ export async function POST(req: NextRequest) {
     } = body
 
     // Validate required fields
-    if (!name || !apprenticeshipName || !company || !sector || !linkedinUrl || !calendlyUrl30) {
+    if (!name || !email || !password || !apprenticeshipName || !company || !sector || !linkedinUrl || !calendlyUrl30) {
       return NextResponse.json(
         { error: 'Missing required fields' },
+        { status: 400 }
+      )
+    }
+
+    if (!email.includes('@')) {
+      return NextResponse.json(
+        { error: 'Invalid email address' },
+        { status: 400 }
+      )
+    }
+
+    if (password.length < 8) {
+      return NextResponse.json(
+        { error: 'Password must be at least 8 characters' },
         { status: 400 }
       )
     }
@@ -52,12 +68,30 @@ export async function POST(req: NextRequest) {
       )
     }
 
+    // Create Supabase Auth user first
+    const { data: authData, error: authError } = await supabase.auth.signUp({
+      email,
+      password,
+      options: {
+        emailRedirectTo: `${req.headers.get('origin')}/auth/callback`,
+      },
+    })
+
+    if (authError || !authData.user) {
+      return NextResponse.json(
+        { error: authError?.message || 'Failed to create account' },
+        { status: 400 }
+      )
+    }
+
     // Create apprentice record (unverified initially)
     const { data: apprentice, error: apprenticeError } = await supabase
       .from('apprentices')
       .insert([
         {
+          id: authData.user.id,
           name,
+          email,
           apprenticeship_name: apprenticeshipName,
           company,
           sector,
