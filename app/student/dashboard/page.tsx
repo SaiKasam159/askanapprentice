@@ -100,7 +100,10 @@ export default function StudentDashboard() {
           <h1 className="ac-h1">Welcome back, {profile.name}!</h1>
           <p className="ac-lede ac-mt-2">Book calls with mentors in your target sectors</p>
         </div>
-        <button onClick={() => { localStorage.clear(); router.push('/'); }} className="ac-btn ac-btn--secondary">Log out</button>
+        <div style={{ display: 'flex', gap: '12px' }}>
+          <Link href="/student/profile" className="ac-btn ac-btn--secondary ac-btn--sm">Profile</Link>
+          <button onClick={() => { localStorage.clear(); router.push('/'); }} className="ac-btn ac-btn--secondary ac-btn--sm">Log out</button>
+        </div>
       </div>
 
       <div className="ac-card">

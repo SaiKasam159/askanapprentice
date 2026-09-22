@@ -1,0 +1,231 @@
+'use client'
+
+import { useEffect, useState } from 'react'
+import { useRouter } from 'next/navigation'
+import Link from 'next/link'
+import { createClient } from '@supabase/supabase-js'
+import { toast } from '@/lib/toast'
+
+const supabase = createClient(
+  process.env.NEXT_PUBLIC_SUPABASE_URL || '',
+  process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY || ''
+)
+
+interface StudentProfile {
+  id: string
+  name: string
+  email: string
+  sectors: string[]
+}
+
+const SECTORS = [
+  'Finance',
+  'Law',
+  'Engineering',
+  'Tech',
+  'Consulting',
+  'Healthcare',
+  'Marketing',
+  'Other',
+]
+
+export default function StudentProfile() {
+  const router = useRouter()
+  const [profile, setProfile] = useState<StudentProfile | null>(null)
+  const [loading, setLoading] = useState(true)
+  const [editing, setEditing] = useState(false)
+  const [saving, setSaving] = useState(false)
+  const [formData, setFormData] = useState<Partial<StudentProfile>>({})
+
+  useEffect(() => {
+    const fetchProfile = async () => {
+      try {
+        const studentId = localStorage.getItem('studentId')
+        if (!studentId) {
+          router.push('/student/login')
+          return
+        }
+
+        const { data, error } = await supabase
+          .from('students')
+          .select('*')
+          .eq('id', studentId)
+          .single()
+
+        if (error) throw error
+        setProfile(data)
+        setFormData(data)
+      } catch (err) {
+        toast.error('Failed to load profile')
+      } finally {
+        setLoading(false)
+      }
+    }
+
+    fetchProfile()
+  }, [router])
+
+  const handleSave = async (e: React.FormEvent) => {
+    e.preventDefault()
+    setSaving(true)
+
+    try {
+      const studentId = localStorage.getItem('studentId')
+      if (!studentId) throw new Error('Not logged in')
+
+      const { error } = await supabase
+        .from('students')
+        .update({
+          name: formData.name,
+          sectors: formData.sectors,
+        })
+        .eq('id', studentId)
+
+      if (error) throw error
+
+      setProfile(formData as StudentProfile)
+      setEditing(false)
+      toast.success('Profile updated!')
+    } catch (err) {
+      toast.error(err instanceof Error ? err.message : 'Failed to save profile')
+    } finally {
+      setSaving(false)
+    }
+  }
+
+  const toggleSector = (sector: string) => {
+    const sectors = formData.sectors || []
+    if (sectors.includes(sector)) {
+      setFormData({
+        ...formData,
+        sectors: sectors.filter(s => s !== sector),
+      })
+    } else {
+      setFormData({
+        ...formData,
+        sectors: [...sectors, sector],
+      })
+    }
+  }
+
+  if (loading) {
+    return (
+      <div className="ac-container ac-section">
+        <p className="ac-muted ac-center">Loading profile...</p>
+      </div>
+    )
+  }
+
+  if (!profile) {
+    return (
+      <div className="ac-container ac-section">
+        <p className="ac-muted ac-center">Profile not found</p>
+      </div>
+    )
+  }
+
+  return (
+    <div className="ac-container ac-section">
+      <div style={{ maxWidth: '42rem', margin: '0 auto' }}>
+        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '32px' }}>
+          <h1 className="ac-h1">Your Profile</h1>
+          <Link href="/student/dashboard" className="ac-btn ac-btn--secondary ac-btn--sm">Back</Link>
+        </div>
+
+        {editing ? (
+          <form onSubmit={handleSave} className="ac-card">
+            <div className="ac-stack" style={{ '--gap': '24px' } as any}>
+              <div className="ac-field">
+                <label className="ac-label" htmlFor="name">Full name</label>
+                <input
+                  className="ac-input"
+                  id="name"
+                  type="text"
+                  value={formData.name || ''}
+                  onChange={(e) => setFormData({ ...formData, name: e.target.value })}
+                  disabled={saving}
+                />
+              </div>
+
+              <div className="ac-field">
+                <label className="ac-label">Email address</label>
+                <div className="ac-input" style={{ background: 'var(--ac-navy-700)', color: 'var(--ac-text-soft)' }}>
+                  {profile.email}
+                </div>
+                <p className="ac-hint ac-mt-1">Email cannot be changed</p>
+              </div>
+
+              <div className="ac-field">
+                <label className="ac-label">Target sectors</label>
+                <div className="ac-stack ac-mt-3" style={{ '--gap': '8px' } as any}>
+                  {SECTORS.map(sector => (
+                    <label key={sector} className="ac-check">
+                      <input
+                        type="checkbox"
+                        checked={(formData.sectors || []).includes(sector)}
+                        onChange={() => toggleSector(sector)}
+                        disabled={saving}
+                      />
+                      <span>{sector}</span>
+                    </label>
+                  ))}
+                </div>
+              </div>
+
+              <div style={{ display: 'flex', gap: '12px' }}>
+                <button type="submit" disabled={saving} className="ac-btn ac-btn--block">
+                  {saving ? 'Saving...' : 'Save changes'}
+                </button>
+                <button
+                  type="button"
+                  onClick={() => {
+                    setEditing(false)
+                    setFormData(profile)
+                  }}
+                  disabled={saving}
+                  className="ac-btn ac-btn--secondary ac-btn--block"
+                >
+                  Cancel
+                </button>
+              </div>
+            </div>
+          </form>
+        ) : (
+          <div className="ac-card">
+            <div className="ac-stack" style={{ '--gap': '24px' } as any}>
+              <div>
+                <p className="ac-overline">Full name</p>
+                <p className="ac-h3" style={{ marginTop: '8px' }}>{profile.name}</p>
+              </div>
+
+              <div>
+                <p className="ac-overline">Email address</p>
+                <p className="ac-h3" style={{ marginTop: '8px' }}>{profile.email}</p>
+              </div>
+
+              <div>
+                <p className="ac-overline">Target sectors</p>
+                <div style={{ display: 'flex', gap: '8px', flexWrap: 'wrap', marginTop: '12px' }}>
+                  {profile.sectors.length > 0 ? (
+                    profile.sectors.map(sector => (
+                      <span key={sector} className="ac-badge ac-badge--solid">{sector}</span>
+                    ))
+                  ) : (
+                    <p className="ac-body ac-muted">No sectors selected</p>
+                  )}
+                </div>
+              </div>
+
+              <button
+                onClick={() => setEditing(true)}
+                className="ac-btn ac-btn--block"
+              >
+                Edit profile
+              </button>
+            </div>
+          </div>
+        )}
+      </div>
+    </div>
+  )
+}
