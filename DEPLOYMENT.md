@@ -49,7 +49,7 @@ After deploying:
 
 ### 4. Test Payments
 
-1. Go to your deployed app at `https://askanapprentice.vercel.app`
+1. Go to your deployed app at `https://apprentacall.vercel.app`
 2. Click "Pricing"
 3. Select a £10 or £15 call
 4. Click "Continue to payment"
