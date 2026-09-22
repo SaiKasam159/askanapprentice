@@ -15,7 +15,9 @@ interface Apprentice {
   company: string
   sector: string
   linkedin_url: string
-  calcom_url: string
+  calendly_url_30: string
+  accepts_45min_calls: boolean
+  calendly_url_45: string | null
   verified: boolean
 }
 
@@ -136,15 +138,27 @@ export default function Directory() {
                     )}
                   </div>
                 </div>
-                <div style={{ flex: 'none' }}>
+                <div style={{ flex: 'none', display: 'flex', gap: '8px', flexDirection: 'column' }}>
                   <a
-                    href={apprentice.calcom_url}
+                    href={apprentice.calendly_url_30}
                     target="_blank"
                     rel="noopener noreferrer"
                     className="ac-btn ac-btn--secondary"
+                    style={{ whiteSpace: 'nowrap' }}
                   >
-                    Book call
+                    30 min • Free
                   </a>
+                  {apprentice.accepts_45min_calls && apprentice.calendly_url_45 && (
+                    <a
+                      href={apprentice.calendly_url_45}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="ac-btn ac-btn--secondary"
+                      style={{ whiteSpace: 'nowrap' }}
+                    >
+                      45 min • £10
+                    </a>
+                  )}
                 </div>
               </div>
             </div>

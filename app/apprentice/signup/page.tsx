@@ -23,7 +23,9 @@ export default function ApprenticeSignup() {
     company: '',
     sector: '',
     linkedinUrl: '',
-    calcomUrl: '',
+    calendlyUrl30: '',
+    accepts45MinCalls: false,
+    calendlyUrl45: '',
   })
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement | HTMLTextAreaElement>) => {
@@ -40,7 +42,7 @@ export default function ApprenticeSignup() {
     setLoading(true)
 
     try {
-      if (!formData.name || !formData.apprenticeshipName || !formData.company || !formData.sector || !formData.linkedinUrl || !formData.calcomUrl) {
+      if (!formData.name || !formData.apprenticeshipName || !formData.company || !formData.sector || !formData.linkedinUrl || !formData.calendlyUrl30) {
         throw new Error('All fields are required')
       }
 
@@ -48,8 +50,16 @@ export default function ApprenticeSignup() {
         throw new Error('Please enter a valid LinkedIn URL')
       }
 
-      if (!formData.calcomUrl.includes('cal.com')) {
-        throw new Error('Please enter a valid Cal.com URL')
+      if (!formData.calendlyUrl30.includes('calendly.com')) {
+        throw new Error('Please enter a valid Calendly URL for 30-minute calls')
+      }
+
+      if (formData.accepts45MinCalls && !formData.calendlyUrl45) {
+        throw new Error('Please enter a Calendly URL for 45-minute calls')
+      }
+
+      if (formData.accepts45MinCalls && !formData.calendlyUrl45.includes('calendly.com')) {
+        throw new Error('Please enter a valid Calendly URL for 45-minute calls')
       }
 
       const response = await fetch('/api/apprentice/signup', {
@@ -157,19 +167,53 @@ export default function ApprenticeSignup() {
           </div>
 
           <div className="ac-field">
-            <label className="ac-label" htmlFor="calcomUrl">Cal.com booking link</label>
+            <label className="ac-label" htmlFor="calendlyUrl30">Calendly link for 30-minute calls</label>
             <input
               className="ac-input"
-              id="calcomUrl"
-              name="calcomUrl"
+              id="calendlyUrl30"
+              name="calendlyUrl30"
               type="url"
-              value={formData.calcomUrl}
+              value={formData.calendlyUrl30}
               onChange={handleChange}
-              placeholder="https://cal.com/yourname"
+              placeholder="https://calendly.com/yourname/30min"
               disabled={loading}
             />
-            <p className="ac-hint ac-mt-1">Your calendar for students to book calls</p>
+            <p className="ac-hint ac-mt-1">Students will book 30-minute calls here</p>
           </div>
+
+          <div className="ac-field">
+            <label style={{ display: 'flex', gap: '12px', cursor: 'pointer', alignItems: 'flex-start' }}>
+              <input
+                type="checkbox"
+                checked={formData.accepts45MinCalls}
+                onChange={(e) => setFormData(prev => ({
+                  ...prev,
+                  accepts45MinCalls: e.target.checked,
+                  calendlyUrl45: e.target.checked ? prev.calendlyUrl45 : ''
+                }))}
+                disabled={loading}
+                style={{ marginTop: '4px' }}
+              />
+              <span className="ac-small">I also want to offer 45-minute calls (£10 per call)</span>
+            </label>
+          </div>
+
+          {formData.accepts45MinCalls && (
+            <div className="ac-field">
+              <label className="ac-label" htmlFor="calendlyUrl45">Calendly link for 45-minute calls</label>
+              <input
+                className="ac-input"
+                id="calendlyUrl45"
+                name="calendlyUrl45"
+                type="url"
+                value={formData.calendlyUrl45}
+                onChange={handleChange}
+                placeholder="https://calendly.com/yourname/45min"
+                disabled={loading}
+              />
+              <p className="ac-hint ac-mt-1">Students will book 45-minute calls here</p>
+            </div>
+          )}
 
           {error && (
             <div style={{ padding: '12px 16px', borderLeft: '4px solid var(--ac-danger)', background: 'var(--ac-navy-800)', borderRadius: '0 var(--ac-radius-control) var(--ac-radius-control) 0' }}>

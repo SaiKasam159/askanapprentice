@@ -10,11 +10,13 @@ export async function POST(req: NextRequest) {
       company,
       sector,
       linkedinUrl,
-      calcomUrl,
+      calendlyUrl30,
+      accepts45MinCalls,
+      calendlyUrl45,
     } = body
 
     // Validate required fields
-    if (!name || !apprenticeshipName || !company || !sector || !linkedinUrl || !calcomUrl) {
+    if (!name || !apprenticeshipName || !company || !sector || !linkedinUrl || !calendlyUrl30) {
       return NextResponse.json(
         { error: 'Missing required fields' },
         { status: 400 }
@@ -29,9 +31,23 @@ export async function POST(req: NextRequest) {
       )
     }
 
-    if (!calcomUrl.includes('cal.com')) {
+    if (!calendlyUrl30.includes('calendly.com')) {
       return NextResponse.json(
-        { error: 'Invalid Cal.com URL' },
+        { error: 'Invalid Calendly URL for 30-minute calls' },
+        { status: 400 }
+      )
+    }
+
+    if (accepts45MinCalls && !calendlyUrl45) {
+      return NextResponse.json(
+        { error: 'Calendly URL for 45-minute calls is required' },
+        { status: 400 }
+      )
+    }
+
+    if (accepts45MinCalls && !calendlyUrl45.includes('calendly.com')) {
+      return NextResponse.json(
+        { error: 'Invalid Calendly URL for 45-minute calls' },
         { status: 400 }
       )
     }
@@ -46,7 +62,9 @@ export async function POST(req: NextRequest) {
           company,
           sector,
           linkedin_url: linkedinUrl,
-          calcom_url: calcomUrl,
+          calendly_url_30: calendlyUrl30,
+          accepts_45min_calls: accepts45MinCalls,
+          calendly_url_45: accepts45MinCalls ? calendlyUrl45 : null,
           verified: false,
           created_at: new Date().toISOString(),
         },
