@@ -133,13 +133,12 @@ export default function StudentSignup() {
             <label className="ac-label">Sectors you're interested in</label>
             <div className="ac-stack" style={{ '--gap': '8px' } as any}>
               {SECTORS.map(sector => (
-                <label key={sector} className="ac-check" style={{ cursor: 'pointer' }}>
+                <label key={sector} className="ac-check" style={{ cursor: 'pointer', display: 'flex', gap: '8px', alignItems: 'center' }}>
                   <input type="checkbox" checked={formData.sectors.includes(sector)} onChange={() => handleSectorChange(sector)} disabled={loading} />
                   <span>{sector}</span>
                 </label>
               ))}
             </div>
-            {formData.sectors.length === 0 && <p className="ac-error ac-mt-1">Select at least one sector</p>}
           </div>
 
           <div className="ac-stack" style={{ '--gap': '12px' } as any}>

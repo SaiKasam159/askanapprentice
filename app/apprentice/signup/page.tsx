@@ -44,8 +44,8 @@ export default function ApprenticeSignup() {
     setLoading(true)
 
     try {
-      if (!formData.name || !formData.email || !formData.password || !formData.apprenticeshipName || !formData.company || !formData.sector || !formData.linkedinUrl || !formData.calendlyUrl30) {
-        throw new Error('All fields are required')
+      if (!formData.name || !formData.email || !formData.password || !formData.apprenticeshipName || !formData.company || !formData.sector || !formData.calendlyUrl30) {
+        throw new Error('All required fields must be filled')
       }
 
       if (!formData.email.includes('@')) {
@@ -56,7 +56,7 @@ export default function ApprenticeSignup() {
         throw new Error('Password must be at least 8 characters')
       }
 
-      if (!formData.linkedinUrl.includes('linkedin.com')) {
+      if (formData.linkedinUrl && !formData.linkedinUrl.includes('linkedin.com')) {
         throw new Error('Please enter a valid LinkedIn URL')
       }
 
@@ -85,7 +85,8 @@ export default function ApprenticeSignup() {
 
       const data = await response.json()
       localStorage.setItem('apprenticeId', data.id)
-      router.push('/apprentice/profile')
+      localStorage.setItem('mentorId', data.id)
+      router.push('/apprentice/signup-success')
     } catch (err) {
       setError(err instanceof Error ? err.message : 'An error occurred')
     } finally {

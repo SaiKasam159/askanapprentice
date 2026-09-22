@@ -138,28 +138,28 @@ export default function Directory() {
                     )}
                   </div>
                 </div>
-                <div style={{ flex: 'none', display: 'flex', gap: '8px', flexDirection: 'column' }}>
+                <div style={{ flex: 'none', display: 'flex', gap: '8px', flexDirection: 'column', minWidth: '140px' }}>
                   <a
                     href={`/mentor/${apprentice.id}`}
-                    className="ac-btn ac-btn--secondary ac-btn--sm"
+                    className="ac-btn ac-btn--secondary ac-btn--sm ac-btn--block"
                     style={{ whiteSpace: 'nowrap' }}
                   >
                     View profile
                   </a>
                   <a
                     href={`/booking?mentorId=${apprentice.id}`}
-                    className="ac-btn ac-btn--secondary"
-                    style={{ whiteSpace: 'nowrap' }}
+                    className="ac-btn ac-btn--primary ac-btn--block"
+                    style={{ whiteSpace: 'nowrap', fontSize: '0.875rem' }}
                   >
-                    30 min • Free
+                    📅 Book 30 min
                   </a>
                   {apprentice.accepts_45min_calls && apprentice.calendly_url_45 && (
                     <a
                       href={`/booking?mentorId=${apprentice.id}`}
-                      className="ac-btn ac-btn--secondary"
-                      style={{ whiteSpace: 'nowrap' }}
+                      className="ac-btn ac-btn--secondary ac-btn--block"
+                      style={{ whiteSpace: 'nowrap', fontSize: '0.875rem' }}
                     >
-                      45 min • £10
+                      📅 Book 45 min
                     </a>
                   )}
                 </div>

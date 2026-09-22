@@ -13,7 +13,7 @@ export default function SignupSuccess() {
 
           <div className="ac-stack ac-mt-6" style={{ '--gap': '12px' } as any}>
             <Link href="/directory" className="ac-btn ac-btn--block ac-btn--lg">Browse mentors</Link>
-            <Link href="/student/login" className="ac-btn ac-btn--secondary ac-btn--block">Log in to your account</Link>
+            <Link href="/student/dashboard" className="ac-btn ac-btn--secondary ac-btn--block">Go to your dashboard</Link>
           </div>
 
           <div className="ac-note ac-mt-6">

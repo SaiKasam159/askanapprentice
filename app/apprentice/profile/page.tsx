@@ -226,7 +226,10 @@ export default function ApprenticeProfile() {
               </div>
             </div>
 
-            <button onClick={() => setEditing(true)} className="ac-btn ac-btn--block">Edit profile</button>
+            <div style={{ display: 'flex', gap: '12px' }}>
+              <button onClick={() => setEditing(true)} className="ac-btn ac-btn--block">Edit profile</button>
+              <button onClick={() => { localStorage.clear(); router.push('/'); }} className="ac-btn ac-btn--secondary ac-btn--block">Log out</button>
+            </div>
           </div>
         </div>
       )}

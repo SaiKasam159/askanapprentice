@@ -12,8 +12,8 @@ export default function ApprenticeSignupSuccess() {
           <p className="ac-lede ac-mt-4">Your mentor profile has been created. We'll review it and add you to the directory within 24 hours.</p>
 
           <div className="ac-stack ac-mt-6" style={{ '--gap': '12px' } as any}>
-            <Link href="/apprentice/profile" className="ac-btn ac-btn--block ac-btn--lg">View your profile</Link>
-            <Link href="/apprentice/login" className="ac-btn ac-btn--secondary ac-btn--block">Log in</Link>
+            <Link href="/apprentice/dashboard" className="ac-btn ac-btn--block ac-btn--lg">Go to your dashboard</Link>
+            <Link href="/apprentice/profile" className="ac-btn ac-btn--secondary ac-btn--block">View your profile</Link>
           </div>
 
           <div className="ac-note ac-mt-6">
