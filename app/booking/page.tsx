@@ -65,7 +65,13 @@ export default function BookingPage() {
     try {
       const data = await apiFetch('/api/bookings', {
         method: 'POST',
-        body: JSON.stringify({ mentorId, callDuration: duration, scheduledTime: selected }),
+        body: JSON.stringify({
+          mentorId,
+          callDuration: duration,
+          scheduledTime: selected,
+          // So the confirmation email shows the student their own local time.
+          studentTimezone: Intl.DateTimeFormat().resolvedOptions().timeZone,
+        }),
       })
 
       if (data.requiresPayment) {

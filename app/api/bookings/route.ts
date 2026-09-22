@@ -3,6 +3,7 @@ import { randomUUID } from 'node:crypto'
 import { getSupabaseAdmin } from '@/lib/supabase'
 import { sessionFrom } from '@/lib/session'
 import { generateSlots } from '@/lib/slots'
+import { sendConfirmationFor } from '@/lib/booking-emails'
 
 // Price in GBP. Never taken from the client: a browser could otherwise ask to pay 1p.
 const CALL_PRICES: Record<number, number> = { 30: 0, 45: 10 }
@@ -16,7 +17,7 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ error: 'Sign in as a student to book a call' }, { status: 401 })
     }
 
-    const { mentorId, callDuration, scheduledTime } = await req.json()
+    const { mentorId, callDuration, scheduledTime, studentTimezone } = await req.json()
     if (!mentorId || !callDuration || !scheduledTime) {
       return NextResponse.json({ error: 'Missing required fields' }, { status: 400 })
     }
@@ -82,6 +83,7 @@ export async function POST(req: NextRequest) {
         scheduled_at: requested.toISOString(),
         status: price > 0 ? 'pending_payment' : 'confirmed',
         meeting_url: `https://meet.jit.si/apprentacall-${randomUUID()}`,
+        student_timezone: typeof studentTimezone === 'string' ? studentTimezone : null,
       }])
       .select()
       .single()
@@ -97,6 +99,9 @@ export async function POST(req: NextRequest) {
       console.error('Booking insert failed:', error)
       return NextResponse.json({ error: `Could not create booking: ${error.message}` }, { status: 500 })
     }
+
+    // Paid bookings are not confirmed yet, so they are emailed after payment.
+    if (price === 0) await sendConfirmationFor(data.id)
 
     return NextResponse.json({ booking: data, requiresPayment: price > 0 })
   } catch (error) {

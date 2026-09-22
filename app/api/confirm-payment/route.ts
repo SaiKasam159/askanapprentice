@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server'
 import Stripe from 'stripe'
 import { getSupabaseAdmin } from '@/lib/supabase'
+import { sendConfirmationFor } from '@/lib/booking-emails'
 
 /** Confirms with Stripe that a booking was actually paid before marking it confirmed. */
 export async function POST(req: NextRequest) {
@@ -45,6 +46,9 @@ export async function POST(req: NextRequest) {
       .single()
 
     if (error) throw error
+
+    await sendConfirmationFor(updated.id)
+
     return NextResponse.json({ booking: updated })
   } catch (error) {
     console.error('Confirm payment error:', error)

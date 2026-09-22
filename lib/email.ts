@@ -43,7 +43,7 @@ export async function sendVerificationEmail(
     }
 
     const result = await getResend().emails.send({
-      from: 'noreply@askanapprentice.com',
+      from: senderAddress(),
       to: email,
       subject: 'Verify your email - Ask An Apprentice',
       html: `
@@ -92,7 +92,7 @@ export async function sendGuardianConsentEmail(
     }
 
     const result = await getResend().emails.send({
-      from: 'noreply@askanapprentice.com',
+      from: senderAddress(),
       to: guardianEmail,
       subject: 'Parental Consent Required - Ask An Apprentice',
       html: `
@@ -122,4 +122,142 @@ export async function sendGuardianConsentEmail(
     console.error('Failed to send guardian consent email:', error)
     throw error
   }
+}
+
+// ---------------------------------------------------------------------------
+// Booking emails
+// ---------------------------------------------------------------------------
+
+const APP_URL = () => process.env.NEXT_PUBLIC_APP_URL || 'http://localhost:3000'
+
+let warnedAboutSender = false
+
+/**
+ * Resend rejects a from-address on an unverified domain, so an unset EMAIL_FROM
+ * falls back to their shared sender. That sender only reaches the address the
+ * Resend account was registered with, which is fine for testing and useless in
+ * production — hence the warning.
+ */
+export function senderAddress(): string {
+  const configured = process.env.EMAIL_FROM
+  if (configured) return configured
+
+  if (!warnedAboutSender) {
+    warnedAboutSender = true
+    console.warn(
+      '[email] EMAIL_FROM is not set, falling back to onboarding@resend.dev. ' +
+      'That address only delivers to your own Resend account email. ' +
+      'Verify a domain at resend.com/domains and set EMAIL_FROM to send to anyone else.'
+    )
+  }
+  return 'ApprentaCall <onboarding@resend.dev>'
+}
+
+export interface BookingEmailDetails {
+  bookingId: string
+  scheduledAt: string
+  callDuration: number
+  price: number
+  meetingUrl: string | null
+  studentName: string
+  studentEmail: string
+  studentTimezone: string | null
+  mentorName: string
+  mentorEmail: string
+  mentorCompany: string | null
+  mentorTimezone: string
+}
+
+function formatWhen(iso: string, timeZone: string): string {
+  return new Intl.DateTimeFormat('en-GB', {
+    timeZone, weekday: 'long', day: 'numeric', month: 'long',
+    hour: '2-digit', minute: '2-digit', timeZoneName: 'short',
+  }).format(new Date(iso))
+}
+
+const escapeHtml = (text: string) =>
+  text.replace(/[&<>"]/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c]!))
+
+/** Shared shell so both emails look the same without pulling in a template library. */
+function layout(heading: string, intro: string, rows: [string, string][], meetingUrl: string | null, footer: string) {
+  const cells = rows
+    .map(([label, value]) =>
+      `<tr><td style="padding:6px 16px 6px 0;color:#6b7280;font-size:14px">${escapeHtml(label)}</td>` +
+      `<td style="padding:6px 0;color:#08152A;font-size:14px;font-weight:500">${escapeHtml(value)}</td></tr>`)
+    .join('')
+
+  const button = meetingUrl
+    ? `<p style="margin:24px 0"><a href="${meetingUrl}" style="background:#08152A;color:#fff;padding:12px 20px;border-radius:10px;text-decoration:none;font-size:14px;font-weight:600;display:inline-block">Join the call</a></p>
+       <p style="color:#6b7280;font-size:13px;margin:0 0 8px">Or paste this link: ${meetingUrl}</p>`
+    : ''
+
+  return `<!doctype html><html><body style="margin:0;background:#f6f7f9;font-family:-apple-system,Segoe UI,Helvetica,Arial,sans-serif">
+  <div style="max-width:560px;margin:0 auto;padding:32px 24px">
+    <p style="font-size:13px;letter-spacing:.08em;text-transform:uppercase;color:#C99A4E;margin:0 0 8px;font-weight:600">ApprentaCall</p>
+    <h1 style="font-size:22px;color:#08152A;margin:0 0 12px">${escapeHtml(heading)}</h1>
+    <p style="color:#374151;font-size:15px;line-height:1.5;margin:0 0 20px">${escapeHtml(intro)}</p>
+    <table style="border-collapse:collapse;margin:0 0 8px">${cells}</table>
+    ${button}
+    <p style="color:#6b7280;font-size:13px;line-height:1.5;margin:24px 0 0;border-top:1px solid #e5e7eb;padding-top:16px">${escapeHtml(footer)}</p>
+  </div></body></html>`
+}
+
+/**
+ * Tells both people a call is booked.
+ *
+ * Never throws. A booking is already paid for and committed by the time this
+ * runs, so a mail outage must not surface as a failed booking.
+ */
+export async function sendBookingEmails(details: BookingEmailDetails): Promise<void> {
+  const studentZone = details.studentTimezone || 'Europe/London'
+  const calendarLink = `${APP_URL()}/api/bookings/ics?bookingId=${details.bookingId}`
+  const cost = details.price > 0 ? `£${Number(details.price).toFixed(2)}` : 'Free'
+
+  const messages = [
+    {
+      to: details.studentEmail,
+      subject: `Your call with ${details.mentorName} is booked`,
+      html: layout(
+        'Your call is booked',
+        `You're speaking with ${details.mentorName}${details.mentorCompany ? ` at ${details.mentorCompany}` : ''}.`,
+        [
+          ['When', formatWhen(details.scheduledAt, studentZone)],
+          ['Length', `${details.callDuration} minutes`],
+          ['Cost', cost],
+        ],
+        details.meetingUrl,
+        `Add it to your calendar: ${calendarLink} — nothing syncs automatically, so this is worth doing now.`
+      ),
+    },
+    {
+      to: details.mentorEmail,
+      subject: `New booking: ${details.studentName}, ${details.callDuration} minutes`,
+      html: layout(
+        'You have a new booking',
+        `${details.studentName} booked a ${details.callDuration}-minute call with you.`,
+        [
+          ['When', formatWhen(details.scheduledAt, details.mentorTimezone)],
+          ['Student', `${details.studentName} (${details.studentEmail})`],
+          ['Length', `${details.callDuration} minutes`],
+        ],
+        details.meetingUrl,
+        `Add it to your calendar: ${calendarLink} — this does not appear in your calendar on its own.`
+      ),
+    },
+  ]
+
+  if (!process.env.RESEND_API_KEY) {
+    console.warn('[email] RESEND_API_KEY not set; skipping booking emails for', details.bookingId)
+    return
+  }
+
+  const resend = getResend()
+  await Promise.all(messages.map(async message => {
+    try {
+      const { error } = await resend.emails.send({ from: senderAddress(), ...message })
+      if (error) console.error(`[email] send to ${message.to} failed:`, error)
+    } catch (err) {
+      console.error(`[email] send to ${message.to} threw:`, err)
+    }
+  }))
 }

@@ -27,3 +27,4 @@ coverage/
 .vercel
 .env*
 .slots-test/
+.email-test/
