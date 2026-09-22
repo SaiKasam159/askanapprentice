@@ -7,7 +7,8 @@
     "build": "next build",
     "start": "next start",
     "lint": "next lint",
-    "test": "jest"
+    "test": "jest",
+    "test:slots": "tsc -p tsconfig.slots.json && mv .slots-test/slots.js .slots-test/slots.mjs && node scripts/test-slots.mjs"
   },
   "dependencies": {
     "@stripe/react-stripe-js": "^6.10.0",

@@ -1,0 +1,11 @@
+{
+  "compilerOptions": {
+    "target": "es2022",
+    "module": "esnext",
+    "moduleResolution": "bundler",
+    "outDir": ".slots-test",
+    "types": [],
+    "skipLibCheck": true
+  },
+  "files": ["lib/slots.ts"]
+}

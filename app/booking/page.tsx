@@ -3,14 +3,12 @@
 import { useEffect, useState } from 'react'
 import { useRouter, useSearchParams } from 'next/navigation'
 import Link from 'next/link'
+import { apiFetch } from '@/lib/session-client'
 import { toast } from '@/lib/toast'
 
-interface Mentor {
-  id: string
-  name: string
-  company: string
-  sector: string
-}
+interface Mentor { id: string; name: string; company: string; sector: string; accepts_45min_calls: boolean }
+
+const PRICES: Record<number, string> = { 30: 'Free', 45: '£10' }
 
 export default function BookingPage() {
   const router = useRouter()
@@ -18,87 +16,95 @@ export default function BookingPage() {
   const mentorId = searchParams.get('mentorId')
 
   const [mentor, setMentor] = useState<Mentor | null>(null)
-  const [loading, setLoading] = useState(true)
+  const [duration, setDuration] = useState<30 | 45>(30)
+  const [slots, setSlots] = useState<string[]>([])
+  const [selected, setSelected] = useState('')
+  const [loadingMentor, setLoadingMentor] = useState(true)
+  const [loadingSlots, setLoadingSlots] = useState(false)
   const [submitting, setSubmitting] = useState(false)
-  const [callDuration, setCallDuration] = useState<30 | 45>(30)
-  const [selectedDate, setSelectedDate] = useState('')
-  const [selectedTime, setSelectedTime] = useState('')
   const [error, setError] = useState('')
 
   useEffect(() => {
-    const fetchMentor = async () => {
-      if (!mentorId) {
-        router.push('/directory')
-        return
-      }
-
-      try {
-        const response = await fetch(`/api/apprentices?id=${mentorId}`)
-        const data = await response.json()
+    if (!mentorId) { router.push('/directory'); return }
+    fetch(`/api/apprentices?id=${mentorId}`)
+      .then(async res => {
+        const data = await res.json()
+        if (!res.ok) throw new Error(data.error)
         setMentor(data.mentor)
-      } catch (err) {
-        console.error('Failed to load mentor', err)
-        router.push('/directory')
-      } finally {
-        setLoading(false)
-      }
-    }
-
-    fetchMentor()
+      })
+      .catch(() => router.push('/directory'))
+      .finally(() => setLoadingMentor(false))
   }, [mentorId, router])
+
+  useEffect(() => {
+    if (!mentorId) return
+    setLoadingSlots(true)
+    setSelected('')
+    fetch(`/api/slots?mentorId=${mentorId}&duration=${duration}`)
+      .then(async res => {
+        const data = await res.json()
+        if (!res.ok) throw new Error(data.error ?? 'Could not load availability')
+        setSlots(data.slots)
+        setError('')
+      })
+      .catch(err => setError(err.message))
+      .finally(() => setLoadingSlots(false))
+  }, [mentorId, duration])
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
-    setError('')
+    if (!selected) { setError('Pick a time first'); return }
 
-    if (!selectedDate || !selectedTime) {
-      setError('Please select a date and time')
+    if (!localStorage.getItem('studentId')) {
+      router.push('/student/login')
       return
     }
 
+    setError('')
     setSubmitting(true)
     try {
-      const studentId = localStorage.getItem('studentId')
-      if (!studentId) {
-        router.push('/student/login')
-        return
-      }
-
-      const scheduledTime = new Date(`${selectedDate}T${selectedTime}`).toISOString()
-
-      const response = await fetch('/api/bookings', {
+      const data = await apiFetch('/api/bookings', {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ studentId, mentorId, callDuration, scheduledTime }),
+        body: JSON.stringify({ mentorId, callDuration: duration, scheduledTime: selected }),
       })
 
-      const data = await response.json()
-      if (!response.ok) throw new Error(data.error || 'Booking failed')
-
-      // Paid calls are only confirmed once Stripe reports the payment succeeded.
       if (data.requiresPayment) {
         router.push(`/checkout?bookingId=${data.booking.id}`)
         return
       }
-
-      toast.success('Booking confirmed!')
+      toast.success('Booking confirmed')
       router.push(`/booking-confirmation?bookingId=${data.booking.id}`)
     } catch (err) {
       const message = err instanceof Error ? err.message : 'Failed to create booking'
       setError(message)
       toast.error(message)
+      // A taken slot disappears from the list, so refresh it.
+      if (message.includes('available') || message.includes('booked')) {
+        const res = await fetch(`/api/slots?mentorId=${mentorId}&duration=${duration}`)
+        const refreshed = await res.json()
+        if (res.ok) { setSlots(refreshed.slots); setSelected('') }
+      }
     } finally {
       setSubmitting(false)
     }
   }
 
-  if (loading) return <div className="ac-container ac-section"><p className="ac-muted">Loading mentor...</p></div>
+  if (loadingMentor) return <div className="ac-container ac-section"><p className="ac-muted">Loading mentor…</p></div>
   if (!mentor) return <div className="ac-container ac-section"><p className="ac-muted">Mentor not found</p></div>
+
+  // Slots arrive as UTC instants; group them by the student's own local date.
+  const byDate = slots.reduce<Record<string, string[]>>((acc, iso) => {
+    const key = new Date(iso).toLocaleDateString(undefined, { weekday: 'long', day: 'numeric', month: 'long' })
+    ;(acc[key] ??= []).push(iso)
+    return acc
+  }, {})
 
   return (
     <div className="ac-container ac-section">
       <div style={{ maxWidth: '36rem', margin: '0 auto' }}>
-        <Link href="/directory" className="ac-link ac-mb-4" style={{ marginBottom: '16px', display: 'inline-block' }}>← Back to mentors</Link>
+        <Link href="/directory" className="ac-link" style={{ marginBottom: '16px', display: 'inline-block' }}>
+          ← Back to mentors
+        </Link>
 
         <h1 className="ac-h1">Book a call with {mentor.name}</h1>
         <p className="ac-lede ac-mt-2">{mentor.company} • {mentor.sector}</p>
@@ -106,38 +112,69 @@ export default function BookingPage() {
         <form onSubmit={handleSubmit} className="ac-card ac-mt-6">
           <div className="ac-stack" style={{ '--gap': '24px' } as any}>
             <div className="ac-fieldset">
-              <legend className="ac-legend">Call duration</legend>
-              <div className="ac-stack ac-mt-3" style={{ '--gap': '8px' } as any}>
-                <label className="ac-check">
-                  <input type="radio" name="duration" checked={callDuration === 30} onChange={() => setCallDuration(30)} />
-                  <span><strong>30 minutes</strong> — Free intro call</span>
-                </label>
-                <label className="ac-check">
-                  <input type="radio" name="duration" checked={callDuration === 45} onChange={() => setCallDuration(45)} />
-                  <span><strong>45 minutes</strong> — £10</span>
-                </label>
+              <legend className="ac-legend">Call length</legend>
+              <div className="ac-segmented ac-mt-3" role="group" aria-label="Call length">
+                {([30, 45] as const)
+                  .filter(d => d === 30 || mentor.accepts_45min_calls)
+                  .map(d => (
+                    <button
+                      key={d} type="button" onClick={() => setDuration(d)}
+                      aria-pressed={duration === d}
+                      className={duration === d ? 'is-active' : ''}
+                    >
+                      {d} min • {PRICES[d]}
+                    </button>
+                  ))}
               </div>
             </div>
 
-            <div className="ac-field">
-              <label className="ac-label" htmlFor="date">Preferred date</label>
-              <input className="ac-input" id="date" type="date" value={selectedDate} onChange={(e) => setSelectedDate(e.target.value)} disabled={submitting} />
+            <div>
+              <p className="ac-overline">Pick a time</p>
+              <p className="ac-hint ac-mt-1">Shown in your local time.</p>
+
+              {loadingSlots ? (
+                <p className="ac-muted ac-small ac-mt-4">Loading available times…</p>
+              ) : slots.length === 0 ? (
+                <div className="ac-empty ac-mt-4">
+                  <p className="ac-h4">No times available</p>
+                  <p className="ac-small ac-muted">
+                    This mentor has not opened any slots for {duration}-minute calls yet. Try the other
+                    length, or check back soon.
+                  </p>
+                </div>
+              ) : (
+                <div className="ac-stack ac-mt-4" style={{ '--gap': '16px' } as any}>
+                  {Object.entries(byDate).map(([date, times]) => (
+                    <div key={date}>
+                      <p className="ac-small" style={{ fontWeight: 600, marginBottom: '8px' }}>{date}</p>
+                      <div style={{ display: 'flex', flexWrap: 'wrap', gap: '8px' }}>
+                        {times.map(iso => (
+                          <button
+                            key={iso} type="button" onClick={() => setSelected(iso)}
+                            aria-pressed={selected === iso}
+                            className={`ac-btn ac-btn--sm ${selected === iso ? '' : 'ac-btn--secondary'}`}
+                          >
+                            {new Date(iso).toLocaleTimeString(undefined, { hour: '2-digit', minute: '2-digit' })}
+                          </button>
+                        ))}
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              )}
             </div>
 
-            <div className="ac-field">
-              <label className="ac-label" htmlFor="time">Preferred time</label>
-              <input className="ac-input" id="time" type="time" value={selectedTime} onChange={(e) => setSelectedTime(e.target.value)} disabled={submitting} />
-            </div>
+            {error && (
+              <div style={{ padding: '12px 16px', borderLeft: '4px solid var(--ac-danger)', background: 'var(--ac-navy-800)', borderRadius: '0 var(--ac-radius-control) var(--ac-radius-control) 0' }}>
+                <p className="ac-small" style={{ color: 'var(--ac-danger)', margin: 0 }}>{error}</p>
+              </div>
+            )}
 
-            {error && <div style={{ padding: '12px 16px', borderLeft: '4px solid var(--ac-danger)', background: 'var(--ac-navy-800)', borderRadius: '0 var(--ac-radius-control) var(--ac-radius-control) 0' }}><p className="ac-small" style={{ color: 'var(--ac-danger)', margin: 0 }}>{error}</p></div>}
-
-            <button type="submit" disabled={submitting} className="ac-btn ac-btn--block ac-btn--lg">{submitting ? 'Confirming...' : 'Confirm booking'}</button>
+            <button type="submit" disabled={submitting || !selected} className="ac-btn ac-btn--block ac-btn--lg">
+              {submitting ? 'Booking…' : duration === 45 ? 'Continue to payment' : 'Confirm booking'}
+            </button>
           </div>
         </form>
-
-        <div className="ac-note ac-mt-6">
-          <p className="ac-small ac-mt-0">You'll receive a confirmation email with the call details. The mentor will receive your booking request.</p>
-        </div>
       </div>
     </div>
   )

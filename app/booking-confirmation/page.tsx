@@ -10,6 +10,7 @@ interface Booking {
   call_duration: number
   price: number
   status: string
+  meeting_url: string | null
   apprentices: { name: string; company: string } | null
 }
 
@@ -67,7 +68,25 @@ export default function BookingConfirmation() {
             </div>
           )}
 
+          {booking?.status === 'confirmed' && booking.meeting_url && (
+            <div className="ac-card ac-card--soft ac-mt-6" style={{ textAlign: 'left' }}>
+              <p className="ac-overline">Join the call here</p>
+              <a href={booking.meeting_url} target="_blank" rel="noopener noreferrer" className="ac-link ac-small">
+                {booking.meeting_url}
+              </a>
+              <p className="ac-hint ac-mt-2">
+                Anyone with this link can join, so keep it to yourself. It opens in the browser, with no
+                account needed.
+              </p>
+            </div>
+          )}
+
           <div className="ac-stack ac-mt-6" style={{ '--gap': '12px' } as any}>
+            {booking?.status === 'confirmed' && (
+              <a href={`/api/bookings/ics?bookingId=${booking.id}`} className="ac-btn ac-btn--block">
+                Add to calendar
+              </a>
+            )}
             <Link href="/student/dashboard" className="ac-btn ac-btn--block ac-btn--lg">Back to dashboard</Link>
             <Link href="/directory" className="ac-btn ac-btn--secondary ac-btn--block">Browse more mentors</Link>
           </div>

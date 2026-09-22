@@ -88,6 +88,15 @@ export default function ApprenticeDashboard() {
         </div>
       </div>
 
+      {apprentice.verified && bookings.length === 0 && (
+        <div className="ac-note ac-mt-0 ac-mb-6">
+          <p className="ac-small ac-mt-0">
+            <strong>Set your availability</strong> so students can book you. Until you do, your profile
+            shows no bookable times.
+          </p>
+        </div>
+      )}
+
       {!apprentice.verified && (
         <div className="ac-note ac-mt-0 ac-mb-6">
           <p className="ac-small ac-mt-0"><strong>Your profile is pending review.</strong> We manually verify all mentors before they appear in the directory. This usually takes 24-48 hours.</p>
@@ -143,6 +152,9 @@ export default function ApprenticeDashboard() {
       )}
 
       <div className="ac-mt-8" style={{ display: 'flex', gap: '12px', flexWrap: 'wrap' }}>
+        <Link href="/apprentice/availability" className="ac-btn">
+          Set availability
+        </Link>
         <Link href="/apprentice/analytics" className="ac-btn ac-btn--secondary">
           View analytics
         </Link>
