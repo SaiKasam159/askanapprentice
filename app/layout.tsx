@@ -1,5 +1,6 @@
 import type { Metadata } from 'next'
 import Link from 'next/link'
+import { ToastContainer } from './components/ToastContainer'
 import './globals.css'
 
 export const dynamic = 'force-dynamic'
@@ -83,6 +84,7 @@ export default function RootLayout({
         <main id="main">
           {children}
         </main>
+        <ToastContainer />
       </body>
     </html>
   )
