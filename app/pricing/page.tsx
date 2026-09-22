@@ -113,7 +113,7 @@ export default function PricingPage() {
           </div>
 
           <Link
-            href={price === 0 ? '/directory' : `/checkout?duration=${selected.duration}&price=${price}`}
+            href="/directory"
             className="ac-btn ac-btn--block ac-btn--lg"
           >
             {price === 0 ? 'Get started' : 'Continue to payment'}

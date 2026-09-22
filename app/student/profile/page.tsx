@@ -11,6 +11,7 @@ interface StudentProfile {
   id: string
   name: string
   email: string
+  linkedin_url: string | null
   sectors: string[]
 }
 
@@ -66,6 +67,7 @@ export default function StudentProfile() {
       await apiFetch('/api/profile', { method: 'PATCH', body: JSON.stringify({
           name: formData.name,
           sectors: formData.sectors,
+          linkedin_url: formData.linkedin_url || null,
         }) })
 
       setProfile(formData as StudentProfile)
@@ -141,6 +143,20 @@ export default function StudentProfile() {
               </div>
 
               <div className="ac-field">
+                <label className="ac-label" htmlFor="linkedin">LinkedIn URL</label>
+                <input
+                  className="ac-input"
+                  id="linkedin"
+                  type="url"
+                  value={formData.linkedin_url || ''}
+                  onChange={(e) => setFormData({ ...formData, linkedin_url: e.target.value })}
+                  placeholder="https://linkedin.com/in/yourprofile"
+                  disabled={saving}
+                />
+                <p className="ac-hint ac-mt-1">Optional. Helps mentors know who they're speaking to.</p>
+              </div>
+
+              <div className="ac-field">
                 <label className="ac-label">Target sectors</label>
                 <div className="ac-stack ac-mt-3" style={{ '--gap': '8px' } as any}>
                   {SECTORS.map(sector => (
@@ -186,6 +202,13 @@ export default function StudentProfile() {
               <div>
                 <p className="ac-overline">Email address</p>
                 <p className="ac-h3" style={{ marginTop: '8px' }}>{profile.email}</p>
+              </div>
+
+              <div>
+                <p className="ac-overline">LinkedIn</p>
+                {profile.linkedin_url
+                  ? <a href={profile.linkedin_url} target="_blank" rel="noopener noreferrer" className="ac-link">{profile.linkedin_url}</a>
+                  : <p className="ac-body ac-muted" style={{ marginTop: '8px' }}>Not added</p>}
               </div>
 
               <div>

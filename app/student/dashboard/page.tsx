@@ -84,6 +84,7 @@ export default function StudentDashboard() {
           <p className="ac-lede ac-mt-2">Book calls with mentors in your target sectors</p>
         </div>
         <div style={{ display: 'flex', gap: '12px' }}>
+          <Link href="/student/history" className="ac-btn ac-btn--secondary ac-btn--sm">Past calls</Link>
           <Link href="/student/profile" className="ac-btn ac-btn--secondary ac-btn--sm">Profile</Link>
           <button onClick={() => { localStorage.clear(); router.push('/'); }} className="ac-btn ac-btn--secondary ac-btn--sm">Log out</button>
         </div>

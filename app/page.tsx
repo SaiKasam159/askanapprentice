@@ -13,6 +13,9 @@ export default function Home() {
           Talk to degree apprentices at your target firms. They've sat the same tests and
           interviews recently. Get the real story, not the recruiter version.
         </p>
+        <p className="ac-small ac-muted" style={{ margin: 0 }}>
+          <Link href="/pricing" className="ac-link">See pricing</Link>
+        </p>
       </div>
 
       <div className="ac-grid ac-mt-6" style={{ '--cols': '1', '--cols-sm': '2' } as any}>

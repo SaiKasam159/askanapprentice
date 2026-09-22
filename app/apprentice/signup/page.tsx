@@ -37,6 +37,7 @@ export default function ApprenticeSignup() {
       ...prev,
       [name]: value
     }))
+    setError('')
   }
 
   const handleSubmit = async (e: React.FormEvent) => {

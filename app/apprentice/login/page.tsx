@@ -51,12 +51,12 @@ export default function ApprenticeLogin() {
           <div className="ac-stack" style={{ '--gap': '24px' } as any}>
             <div className="ac-field">
               <label className="ac-label" htmlFor="email">Email address</label>
-              <input className="ac-input" id="email" type="email" value={email} onChange={(e) => setEmail(e.target.value)} placeholder="your@email.com" disabled={loading} />
+              <input className="ac-input" id="email" type="email" value={email} onChange={(e) => { setEmail(e.target.value); setError('') }} placeholder="your@email.com" disabled={loading} />
             </div>
 
             <div className="ac-field">
               <label className="ac-label" htmlFor="password">Password</label>
-              <input className="ac-input" id="password" type="password" value={password} onChange={(e) => setPassword(e.target.value)} placeholder="••••••••" disabled={loading} />
+              <input className="ac-input" id="password" type="password" value={password} onChange={(e) => { setPassword(e.target.value); setError('') }} placeholder="••••••••" disabled={loading} />
             </div>
 
             {error && <div style={{ padding: '12px 16px', borderLeft: '4px solid var(--ac-danger)', background: 'var(--ac-navy-800)', borderRadius: '0 var(--ac-radius-control) var(--ac-radius-control) 0' }}><p className="ac-small" style={{ color: 'var(--ac-danger)', margin: 0 }}>{error}</p></div>}

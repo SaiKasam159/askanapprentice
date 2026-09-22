@@ -3,6 +3,7 @@
 import { useEffect, useState } from 'react'
 import { useRouter } from 'next/navigation'
 import Link from 'next/link'
+import { apiFetch } from '@/lib/session-client'
 
 interface Earning {
   id: string
@@ -10,15 +11,14 @@ interface Earning {
   studentName: string
   callDuration: number
   amount: number
-  status: 'paid' | 'pending' | 'processing'
+  status: 'due' | 'upcoming' | 'pending'
   createdAt: string
-  paidAt?: string
 }
 
 interface EarningsData {
+  platformFeeRate: number
   totalEarned: number
   pendingPayout: number
-  lastPayout?: string
   earnings: Earning[]
 }
 
@@ -29,49 +29,13 @@ export default function MentorEarnings() {
   const [error, setError] = useState('')
 
   useEffect(() => {
-    const fetchEarnings = async () => {
-      try {
-        const apprenticeId = localStorage.getItem('apprenticeId')
-        if (!apprenticeId) {
-          router.push('/apprentice/login')
-          return
-        }
-
-        // Mock data for now - replace with real API call
-        setData({
-          totalEarned: 125.50,
-          pendingPayout: 45.00,
-          lastPayout: '2026-09-15',
-          earnings: [
-            {
-              id: '1',
-              bookingId: 'b1',
-              studentName: 'Alice Johnson',
-              callDuration: 45,
-              amount: 10.00,
-              status: 'paid',
-              createdAt: '2026-09-10',
-              paidAt: '2026-09-15',
-            },
-            {
-              id: '2',
-              bookingId: 'b2',
-              studentName: 'Bob Smith',
-              callDuration: 45,
-              amount: 10.00,
-              status: 'pending',
-              createdAt: '2026-09-18',
-            },
-          ],
-        })
-      } catch (err) {
-        setError(err instanceof Error ? err.message : 'Failed to load earnings')
-      } finally {
-        setLoading(false)
-      }
-    }
-
-    fetchEarnings()
+    apiFetch('/api/earnings')
+      .then(setData)
+      .catch(err => {
+        if (/signed in/i.test(err.message)) router.push('/apprentice/login')
+        else setError(err.message)
+      })
+      .finally(() => setLoading(false))
   }, [router])
 
   if (loading) {
@@ -110,15 +74,14 @@ export default function MentorEarnings() {
             <div className="ac-card ac-card--soft">
               <p className="ac-overline">Pending payout</p>
               <p className="ac-h2" style={{ marginTop: '8px' }}>£{data.pendingPayout.toFixed(2)}</p>
-              <p className="ac-small ac-muted" style={{ marginTop: '8px' }}>Paid monthly on the 15th</p>
+              <p className="ac-small ac-muted" style={{ marginTop: '8px' }}>Includes calls not yet held</p>
             </div>
 
-            {data.lastPayout && (
-              <div className="ac-card ac-card--soft">
-                <p className="ac-overline">Last payout</p>
-                <p className="ac-h2" style={{ marginTop: '8px' }}>{new Date(data.lastPayout).toLocaleDateString()}</p>
-              </div>
-            )}
+            <div className="ac-card ac-card--soft">
+              <p className="ac-overline">Platform fee</p>
+              <p className="ac-h2" style={{ marginTop: '8px' }}>{Math.round(data.platformFeeRate * 100)}%</p>
+              <p className="ac-small ac-muted" style={{ marginTop: '8px' }}>You keep the rest of every paid call</p>
+            </div>
           </div>
 
           <div className="ac-stack" style={{ maxWidth: '56rem' }}>
@@ -136,8 +99,10 @@ export default function MentorEarnings() {
                       <div style={{ textAlign: 'right' }}>
                         <p className="ac-body" style={{ fontWeight: 600, color: 'var(--ac-brass)', margin: 0 }}>£{earning.amount.toFixed(2)}</p>
                         <div style={{ marginTop: '8px' }}>
-                          <span className={`ac-badge ac-badge--sm ${earning.status === 'paid' ? 'ac-badge--solid' : 'ac-badge--brass'}`}>
-                            {earning.status === 'paid' ? 'Paid' : earning.status === 'processing' ? 'Processing' : 'Pending'}
+                          <span className={`ac-badge ac-badge--sm ${earning.status === 'due' ? 'ac-badge--solid' : 'ac-badge--brass'}`}>
+                            {earning.status === 'due' ? 'Due to you'
+                              : earning.status === 'upcoming' ? 'Call upcoming'
+                              : 'Awaiting payment'}
                           </span>
                         </div>
                       </div>
@@ -148,14 +113,14 @@ export default function MentorEarnings() {
             ) : (
               <div className="ac-empty">
                 <p className="ac-h3">No earnings yet</p>
-                <p className="ac-body ac-muted">Complete calls to start earning. Payments are processed monthly.</p>
+                <p className="ac-body ac-muted">Only 45-minute calls are paid. Free intro calls do not appear here.</p>
               </div>
             )}
           </div>
 
           <div className="ac-note ac-mt-8">
             <p className="ac-small ac-mt-0">
-              <strong>Payment method:</strong> Earnings are paid to your connected bank account on the 15th of each month. Make sure your payment details are up to date in your settings.
+              <strong>Getting paid:</strong> payouts are not automated yet. Anything marked "Due to you" is money we have collected for a call that has happened; contact us to arrange transfer.
             </p>
           </div>
         </>

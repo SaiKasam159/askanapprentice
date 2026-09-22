@@ -65,7 +65,7 @@ export default function StudentLogin() {
                 id="email"
                 type="email"
                 value={email}
-                onChange={(e) => setEmail(e.target.value)}
+                onChange={(e) => { setEmail(e.target.value); setError('') }}
                 placeholder="your@email.com"
                 disabled={loading}
               />
@@ -78,7 +78,7 @@ export default function StudentLogin() {
                 id="password"
                 type="password"
                 value={password}
-                onChange={(e) => setPassword(e.target.value)}
+                onChange={(e) => { setPassword(e.target.value); setError('') }}
                 placeholder="••••••••"
                 disabled={loading}
               />
@@ -97,6 +97,10 @@ export default function StudentLogin() {
             >
               {loading ? 'Logging in...' : 'Log in'}
             </button>
+
+            <p className="ac-small ac-center" style={{ margin: 0 }}>
+              <Link href="/auth/reset-password" className="ac-link">Forgot your password?</Link>
+            </p>
 
             <p className="ac-small ac-muted ac-center">
               Don't have an account? <Link href="/signup" className="ac-link">Sign up</Link>

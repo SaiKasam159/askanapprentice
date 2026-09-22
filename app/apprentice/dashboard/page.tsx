@@ -44,7 +44,7 @@ export default function ApprenticeDashboard() {
         ])
         setApprentice(profile)
         setBookings(bookingsData)
-        setEarnings(bookingsData.reduce((sum: number, b: Booking) => sum + Number(b.price) * 0.15, 0))
+        setEarnings(bookingsData.reduce((sum: number, b: Booking) => sum + Number(b.price) * 0.85, 0))
       } catch (err) {
         console.error('Failed to load dashboard:', err)
       } finally {
@@ -139,7 +139,7 @@ export default function ApprenticeDashboard() {
                     </p>
                   </div>
                   <div className="ac-right">
-                    <p className="ac-h4">£{(booking.price * 0.15).toFixed(2)}</p>
+                    <p className="ac-h4">£{(Number(booking.price) * 0.85).toFixed(2)}</p>
                     <span className={`ac-badge ${booking.status === 'completed' ? 'ac-badge--solid' : 'ac-badge--brass'} ac-mt-1`}>
                       {booking.status}
                     </span>
@@ -154,6 +154,9 @@ export default function ApprenticeDashboard() {
       <div className="ac-mt-8" style={{ display: 'flex', gap: '12px', flexWrap: 'wrap' }}>
         <Link href="/apprentice/availability" className="ac-btn">
           Set availability
+        </Link>
+        <Link href="/apprentice/bookings" className="ac-btn ac-btn--secondary">
+          Your bookings
         </Link>
         <Link href="/apprentice/analytics" className="ac-btn ac-btn--secondary">
           View analytics

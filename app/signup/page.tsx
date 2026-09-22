@@ -27,9 +27,11 @@ export default function StudentSignup() {
     const { name, value, type } = e.target
     const checked = (e.target as HTMLInputElement).checked
     setFormData(prev => ({ ...prev, [name]: type === 'checkbox' ? checked : value }))
+    setError('')
   }
 
   const handleSectorChange = (sector: string) => {
+    setError('')
     setFormData(prev => ({
       ...prev,
       sectors: prev.sectors.includes(sector)
