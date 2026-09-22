@@ -3,13 +3,9 @@
 import { useEffect, useState } from 'react'
 import { useRouter, useSearchParams } from 'next/navigation'
 import Link from 'next/link'
-import { loadStripe } from '@stripe/stripe-js'
+import { loadStripe, type Stripe } from '@stripe/stripe-js'
 import { Elements, PaymentElement, useStripe, useElements } from '@stripe/react-stripe-js'
 import { toast } from '@/lib/toast'
-
-const stripePromise = process.env.NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY
-  ? loadStripe(process.env.NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY)
-  : null
 
 const errorBox = {
   padding: '12px 16px',
@@ -79,6 +75,7 @@ export default function Checkout() {
   const searchParams = useSearchParams()
   const bookingId = searchParams.get('bookingId')
 
+  const [stripePromise, setStripePromise] = useState<Promise<Stripe | null> | null>(null)
   const [clientSecret, setClientSecret] = useState('')
   const [amount, setAmount] = useState(0)
   const [loading, setLoading] = useState(true)
@@ -91,16 +88,25 @@ export default function Checkout() {
       return
     }
 
-    fetch('/api/create-payment-intent', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ bookingId }),
-    })
-      .then(async res => {
-        const data = await res.json()
-        if (!res.ok) throw new Error(data.error ?? 'Could not start payment')
-        setClientSecret(data.clientSecret)
-        setAmount(data.amount)
+    const readJson = async (res: Response, fallback: string) => {
+      const data = await res.json()
+      if (!res.ok) throw new Error(data.error ?? fallback)
+      return data
+    }
+
+    Promise.all([
+      // The publishable key is served at runtime rather than inlined at build time.
+      fetch('/api/get-stripe-key').then(res => readJson(res, 'Could not load payment settings')),
+      fetch('/api/create-payment-intent', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ bookingId }),
+      }).then(res => readJson(res, 'Could not start payment')),
+    ])
+      .then(([keyData, intentData]) => {
+        setStripePromise(loadStripe(keyData.publishableKey))
+        setClientSecret(intentData.clientSecret)
+        setAmount(intentData.amount)
       })
       .catch(err => setError(err.message))
       .finally(() => setLoading(false))
@@ -118,16 +124,6 @@ export default function Checkout() {
           <div className="ac-card ac-mt-6">
             <div style={errorBox}><p className="ac-small" style={{ color: 'var(--ac-danger)', margin: 0 }}>{error}</p></div>
             <Link href="/directory" className="ac-btn ac-btn--secondary ac-btn--block ac-mt-4">Back to mentors</Link>
-          </div>
-        )}
-
-        {!loading && !error && !stripePromise && (
-          <div className="ac-card ac-mt-6">
-            <div style={errorBox}>
-              <p className="ac-small" style={{ color: 'var(--ac-danger)', margin: 0 }}>
-                Payments are not configured. NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY is missing.
-              </p>
-            </div>
           </div>
         )}
 

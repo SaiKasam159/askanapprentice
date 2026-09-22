@@ -42,7 +42,7 @@ After deploying:
 1. Go to your Vercel project settings
 2. Click "Environment Variables"
 3. Add these two variables:
-   - **NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY** = your publishable key
+   - **STRIPE_PUBLISHABLE_KEY** = your publishable key
    - **STRIPE_SECRET_KEY** = your secret key
 
 4. Redeploy with these environment variables
@@ -103,7 +103,7 @@ To change this later, update `app/pricing/page.tsx` with mentor/platform split p
 
 ```bash
 # Add your test Stripe keys to .env.local
-NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY=pk_test_...
+STRIPE_PUBLISHABLE_KEY=pk_test_...
 STRIPE_SECRET_KEY=sk_test_...
 
 # Run locally
