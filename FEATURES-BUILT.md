@@ -100,38 +100,63 @@ All new pages use the existing ApprentaCall design kit:
 
 ---
 
-## 📋 What's Still TODO (Future Phases)
+## ✅ Phase 2-4 Features Complete
 
-### Phase 2: Bookings & Payments
-- [ ] Booking flow (student selecting mentor + time slot)
-- [ ] Booking confirmation page
-- [ ] Stripe payment integration for 45-minute calls
-- [ ] Payment confirmation emails
-- [ ] Booking history/calendar view
+### Bookings & Payments
+- ✅ Booking flow with mentor selection and time slot selection
+- ✅ Booking confirmation page showing booking details
+- ✅ Checkout page for 45-minute paid calls
+- ✅ Payment API stub for Stripe integration
+- ✅ Support for both free 30-min and paid 45-min calls
 
-### Phase 3: Admin & Verification
-- [ ] Admin dashboard for mentor verification
-- [ ] Email notifications for new signups
-- [ ] Mentor profile review/approval workflow
-- [ ] Admin stats & analytics
+### Mentor & Student Profiles
+- ✅ Editable student profile (name, sectors)
+- ✅ Editable mentor profile (all fields including Cal.com links)
+- ✅ Public mentor profile view page at `/mentor/[id]`
+- ✅ Student profile view/edit page at `/student/profile`
+- ✅ Mentor profile view/edit page at `/apprentice/profile`
 
-### Phase 4: Profile Management
-- [ ] Edit student profile page
-- [ ] Edit mentor profile page (change Cal.com links, sectors, etc.)
-- [ ] Password reset flow
-- [ ] Account settings page
+### Analytics & Earnings
+- ✅ Mentor analytics page showing ratings and feedback
+- ✅ Mentor earnings/payout dashboard
+- ✅ Track completed calls and bookings
+- ✅ Display student feedback and ratings
 
-### Phase 5: Notifications & Follow-up
-- [ ] Email confirmations for bookings
-- [ ] Reminder emails before calls
-- [ ] Post-call follow-up emails
-- [ ] Call rating/feedback form
+### Email & Notifications (Stubs)
+- ✅ Email API endpoints for booking confirmations
+- ✅ Email API endpoints for call reminders
+- ✅ Toast notification system (global)
+- ✅ Ready for integration with email providers (Resend, SendGrid, etc.)
 
-### Phase 6: Polish
-- [ ] Responsive design testing on mobile
-- [ ] Accessibility audit
+### Directory & Discovery
+- ✅ Browse mentors by sector
+- ✅ View mentor profile before booking
+- ✅ Display mentor ratings and verification status
+- ✅ Direct booking from directory or profile
+
+### Dashboard Improvements
+- ✅ Student dashboard with actual bookings list
+- ✅ Mentor dashboard with link to analytics and earnings
+- ✅ Show upcoming vs completed calls
+- ✅ Display call durations and pricing
+
+## 📋 What's Still TODO (Phase 5+)
+
+### Advanced Features
+- [ ] Real email provider integration (Resend, SendGrid, etc.)
+- [ ] Full Stripe payment processing
+- [ ] Advanced mentor verification workflow with rejection reasons
+- [ ] Mentor earnings reports and CSV export
+- [ ] Calendar view for bookings
+- [ ] Recurring availability settings
+
+### Quality & Polish
+- [ ] Mobile responsive design audit
+- [ ] Accessibility (WCAG) audit
 - [ ] Performance optimization
-- [ ] Analytics tracking
+- [ ] Analytics/tracking setup
+- [ ] Image optimization
+- [ ] SEO improvements
 
 ---
 
@@ -181,26 +206,62 @@ All new pages use the existing ApprentaCall design kit:
 
 ## 📊 Stats
 
-- **Files Created**: 12
-- **API Endpoints**: 1 (auth/login)
-- **Pages Built**: 7 (login pages, dashboards, success pages, error pages)
-- **Components Created**: 2 (ToastContainer)
+- **Files Created**: 30+
+- **API Endpoints**: 12 (auth, bookings, ratings, email stubs, payments)
+- **Pages Built**: 25+ (all major user flows)
+- **Components Created**: 2 (ToastContainer, Toast system)
 - **Libraries Added**: 0 (using existing Supabase, React)
 - **Design Consistency**: 100% (all pages use existing design kit)
+- **Total Build Size**: ~172 kB JS (First Load)
 
 ---
 
-## ✨ Key Features
+## ✨ Key Features Implemented
 
+### Authentication & Onboarding
 ✓ Full authentication flow (login/logout)
-✓ Student dashboard with profile view
-✓ Mentor profile access after signup
+✓ Email/password student signup
+✓ Email/password mentor signup
+✓ Success pages with clear next steps
+✓ Password reset flow (skeleton)
+✓ Session persistence with localStorage
+
+### Dashboards & Profiles
+✓ Student dashboard with upcoming/completed bookings
+✓ Mentor dashboard with analytics and earnings
+✓ Public mentor profile pages
+✓ Editable student profile
+✓ Editable mentor profile with Cal.com link management
+✓ Admin verification dashboard
+
+### Booking System
+✓ Browse mentors by sector
+✓ View detailed mentor profiles
+✓ Book 30-minute free calls
+✓ Book 45-minute paid calls
+✓ Select date/time for calls
+✓ Booking confirmation pages
+✓ Checkout flow for paid calls
+
+### Analytics & Ratings
+✓ Mentor analytics showing student ratings
+✓ Call rating/feedback system (1-5 stars)
+✓ Earnings dashboard showing payouts
+✓ Completed/upcoming calls tracking
+✓ Student feedback display
+
+### Notifications
+✓ Global toast notification system
+✓ Email notification API stubs
+✓ Ready for email provider integration
+
+### UX & Design
 ✓ Global notification system
 ✓ Error pages for 404/500
-✓ Success confirmation pages
 ✓ Redirects after signup
-✓ localStorage session persistence
-✓ Design system maintained throughout
+✓ Design system maintained throughout (100%)
+✓ Consistent color scheme and typography
+✓ Responsive layouts
 
 ---
 
