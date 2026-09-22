@@ -140,6 +140,13 @@ export default function Directory() {
                 </div>
                 <div style={{ flex: 'none', display: 'flex', gap: '8px', flexDirection: 'column' }}>
                   <a
+                    href={`/mentor/${apprentice.id}`}
+                    className="ac-btn ac-btn--secondary ac-btn--sm"
+                    style={{ whiteSpace: 'nowrap' }}
+                  >
+                    View profile
+                  </a>
+                  <a
                     href={`/booking?mentorId=${apprentice.id}`}
                     className="ac-btn ac-btn--secondary"
                     style={{ whiteSpace: 'nowrap' }}
