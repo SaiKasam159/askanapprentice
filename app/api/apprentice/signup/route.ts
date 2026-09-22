@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { getSupabaseAdmin } from '@/lib/supabase'
 import { createSessionToken } from '@/lib/session'
+import { serverError } from '@/lib/errors'
 
 export async function POST(req: NextRequest) {
   try {
@@ -28,6 +29,10 @@ export async function POST(req: NextRequest) {
     if (accepts45MinCalls && !calendlyUrl45?.includes('cal.com')) {
       return NextResponse.json({ error: 'Please enter a valid cal.com URL for 45-minute calls' }, { status: 400 })
     }
+
+    // Fail before creating anything if sessions cannot be signed: otherwise the
+    // account exists, the request errors, and the retry hits "already exists".
+    createSessionToken('preflight', 'apprentice')
 
     const admin = getSupabaseAdmin()
 
@@ -78,10 +83,6 @@ export async function POST(req: NextRequest) {
       message: 'Account created. Your profile will be reviewed before appearing in the directory.',
     })
   } catch (error) {
-    console.error('Apprentice signup error:', error)
-    return NextResponse.json(
-      { error: error instanceof Error ? error.message : 'Unexpected error during signup' },
-      { status: 500 }
-    )
+    return serverError('mentor signup', error)
   }
 }

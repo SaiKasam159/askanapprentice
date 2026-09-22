@@ -3,6 +3,7 @@
 import { useEffect, useState } from 'react'
 import Link from 'next/link'
 import { apiFetch } from '@/lib/session-client'
+import { SessionExpired } from '@/app/components/SessionExpired'
 
 
 interface Booking {
@@ -65,9 +66,7 @@ export default function ApprenticeDashboard() {
 
   if (!apprentice) {
     return (
-      <div className="ac-container ac-section ac-center">
-        <p className="ac-body ac-muted">Apprentice profile not found</p>
-      </div>
+      <SessionExpired role="apprentice" />
     )
   }
 

@@ -36,9 +36,8 @@ export default function ResetPassword() {
       toast.success('Check your email for reset link')
       setEmail('')
     } catch (err) {
-      const message = err instanceof Error ? err.message : 'An error occurred'
-      setError(message)
-      toast.error(message)
+      // Shown inline under the field; a toast as well would say it twice.
+      setError(err instanceof Error ? err.message : 'An error occurred')
     } finally {
       setLoading(false)
     }
@@ -67,7 +66,7 @@ export default function ResetPassword() {
     <div className="ac-container ac-section">
       <div style={{ maxWidth: '28rem', margin: '0 auto' }}>
         <h1 className="ac-h1">Reset password</h1>
-        <p className="ac-lede ac-mt-2">Enter your email or choose a new password</p>
+        <p className="ac-lede ac-mt-2">{token ? 'Choose a new password for your account.' : "Enter your email and we'll send you a link to reset your password."}</p>
 
         {!token ? (
           <form onSubmit={handleRequestReset} className="ac-card ac-mt-6">

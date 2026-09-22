@@ -4,6 +4,7 @@ import { useEffect, useState } from 'react'
 import { useRouter } from 'next/navigation'
 import Link from 'next/link'
 import { apiFetch } from '@/lib/session-client'
+import { SessionExpired } from '@/app/components/SessionExpired'
 
 
 interface StudentProfile {
@@ -68,11 +69,7 @@ export default function StudentDashboard() {
 
   if (error || !profile) {
     return (
-      <div className="ac-container ac-section">
-        <div className="ac-center">
-          <p className="ac-body ac-muted">{error || 'Profile not found'}</p>
-        </div>
-      </div>
+      <SessionExpired role="student" />
     )
   }
 

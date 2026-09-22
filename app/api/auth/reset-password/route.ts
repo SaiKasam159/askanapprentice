@@ -16,7 +16,10 @@ export async function POST(req: NextRequest) {
 
     if (error) {
       console.error('Password reset error:', error)
-      return NextResponse.json({ error: error.message }, { status: 400 })
+      const message = /invalid/i.test(error.message)
+        ? "We can't send a reset link to that address. Check it's the one you signed up with."
+        : error.message
+      return NextResponse.json({ error: message }, { status: 400 })
     }
 
     return NextResponse.json({ message: 'Password reset email sent' })

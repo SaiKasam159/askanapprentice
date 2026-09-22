@@ -5,6 +5,7 @@ import { useRouter } from 'next/navigation'
 import Link from 'next/link'
 import { toast } from '@/lib/toast'
 import { apiFetch } from '@/lib/session-client'
+import { SessionExpired } from '@/app/components/SessionExpired'
 
 
 interface ApprenticeProfile {
@@ -105,11 +106,7 @@ export default function ApprenticeProfile() {
 
   if (error || !profile) {
     return (
-      <div className="ac-container ac-section">
-        <div className="ac-center">
-          <p className="ac-body ac-muted">{error || 'Profile not found'}</p>
-        </div>
-      </div>
+      <SessionExpired role="apprentice" />
     )
   }
 

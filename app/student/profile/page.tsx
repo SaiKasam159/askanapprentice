@@ -5,6 +5,7 @@ import { useRouter } from 'next/navigation'
 import Link from 'next/link'
 import { toast } from '@/lib/toast'
 import { apiFetch } from '@/lib/session-client'
+import { SessionExpired } from '@/app/components/SessionExpired'
 
 
 interface StudentProfile {
@@ -105,9 +106,7 @@ export default function StudentProfile() {
 
   if (!profile) {
     return (
-      <div className="ac-container ac-section">
-        <p className="ac-muted ac-center">Profile not found</p>
-      </div>
+      <SessionExpired role="student" />
     )
   }
 
