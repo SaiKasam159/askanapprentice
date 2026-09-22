@@ -12,10 +12,10 @@ const supabase = createClient(
 
 interface CallHistory {
   id: string
-  scheduled_time: string
+  scheduled_at: string
   call_duration: number
   status: string
-  mentors: { name: string; company: string }
+  apprentices: { name: string; company: string } | null
 }
 
 export default function CallHistory() {
@@ -34,10 +34,10 @@ export default function CallHistory() {
 
         const { data, error } = await supabase
           .from('bookings')
-          .select('*, mentors:mentor_id(name, company)')
+          .select('*, apprentices:apprentice_id(name, company)')
           .eq('student_id', studentId)
-          .lt('scheduled_time', new Date().toISOString())
-          .order('scheduled_time', { ascending: false })
+          .lt('scheduled_at', new Date().toISOString())
+          .order('scheduled_at', { ascending: false })
 
         if (error) throw error
         setCalls(data || [])
@@ -73,9 +73,9 @@ export default function CallHistory() {
           {calls.map(call => (
             <li key={call.id} className="ac-card ac-card--sm">
               <div>
-                <p className="ac-h4">{call.mentors.name}</p>
-                <p className="ac-small ac-muted ac-mt-1">{call.mentors.company} • {call.call_duration} min</p>
-                <p className="ac-small ac-muted ac-mt-2">{new Date(call.scheduled_time).toLocaleString()}</p>
+                <p className="ac-h4">{call.apprentices?.name}</p>
+                <p className="ac-small ac-muted ac-mt-1">{call.apprentices?.company} • {call.call_duration} min</p>
+                <p className="ac-small ac-muted ac-mt-2">{new Date(call.scheduled_at).toLocaleString()}</p>
               </div>
               <span className="ac-badge ac-badge--solid">{call.status}</span>
             </li>

@@ -19,12 +19,12 @@ interface StudentProfile {
 
 interface Booking {
   id: string
-  mentor_id: string
-  mentor_name: string
+  apprentice_id: string
   call_duration: number
+  price: number
   scheduled_at: string
   status: string
-  is_paid: boolean
+  apprentices: { name: string } | null
 }
 
 export default function StudentDashboard() {
@@ -54,7 +54,7 @@ export default function StudentDashboard() {
 
         const { data: bookingsData } = await supabase
           .from('bookings')
-          .select('*')
+          .select('*, apprentices:apprentice_id(name)')
           .eq('student_id', studentId)
           .order('scheduled_at', { ascending: true })
 
@@ -132,11 +132,11 @@ export default function StudentDashboard() {
                 <div key={booking.id} className="ac-card ac-card--soft">
                   <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', gap: '12px' }}>
                     <div>
-                      <p className="ac-body" style={{ fontWeight: 500, margin: 0 }}>{booking.mentor_name}</p>
+                      <p className="ac-body" style={{ fontWeight: 500, margin: 0 }}>{booking.apprentices?.name ?? 'Mentor'}</p>
                       <p className="ac-small ac-muted" style={{ marginTop: '4px' }}>
                         {scheduledDate.toLocaleDateString()} at {scheduledDate.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
                       </p>
-                      <p className="ac-small ac-muted">{booking.call_duration} minutes • {booking.is_paid ? '£10' : 'Free'}</p>
+                      <p className="ac-small ac-muted">{booking.call_duration} minutes • {Number(booking.price) > 0 ? `£${Number(booking.price).toFixed(2)}` : 'Free'}</p>
                     </div>
                     <div>
                       <span className={`ac-badge ${isUpcoming ? 'ac-badge--solid' : 'ac-badge--brass'}`}>

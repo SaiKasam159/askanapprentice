@@ -69,23 +69,24 @@ export default function BookingPage() {
       const response = await fetch('/api/bookings', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          studentId,
-          mentorId,
-          callDuration,
-          scheduledTime,
-          isPaid: callDuration === 45,
-        }),
+        body: JSON.stringify({ studentId, mentorId, callDuration, scheduledTime }),
       })
 
-      if (!response.ok) throw new Error('Booking failed')
-
       const data = await response.json()
+      if (!response.ok) throw new Error(data.error || 'Booking failed')
+
+      // Paid calls are only confirmed once Stripe reports the payment succeeded.
+      if (data.requiresPayment) {
+        router.push(`/checkout?bookingId=${data.booking.id}`)
+        return
+      }
+
       toast.success('Booking confirmed!')
       router.push(`/booking-confirmation?bookingId=${data.booking.id}`)
     } catch (err) {
-      setError(err instanceof Error ? err.message : 'Failed to create booking')
-      toast.error(error)
+      const message = err instanceof Error ? err.message : 'Failed to create booking'
+      setError(message)
+      toast.error(message)
     } finally {
       setSubmitting(false)
     }

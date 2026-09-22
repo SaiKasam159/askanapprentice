@@ -1,70 +1,149 @@
 'use client'
 
-import { useState } from 'react'
+import { useEffect, useState } from 'react'
 import { useRouter, useSearchParams } from 'next/navigation'
 import Link from 'next/link'
+import { loadStripe } from '@stripe/stripe-js'
+import { Elements, PaymentElement, useStripe, useElements } from '@stripe/react-stripe-js'
 import { toast } from '@/lib/toast'
 
-export default function Checkout() {
-  const router = useRouter()
-  const searchParams = useSearchParams()
-  const bookingId = searchParams.get('bookingId')
-  const mentorName = searchParams.get('mentorName')
+const stripePromise = process.env.NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY
+  ? loadStripe(process.env.NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY)
+  : null
 
+const errorBox = {
+  padding: '12px 16px',
+  borderLeft: '4px solid var(--ac-danger)',
+  background: 'var(--ac-navy-800)',
+  borderRadius: '0 var(--ac-radius-control) var(--ac-radius-control) 0',
+}
+
+function PaymentForm({ bookingId, amount }: { bookingId: string; amount: number }) {
+  const stripe = useStripe()
+  const elements = useElements()
+  const router = useRouter()
   const [processing, setProcessing] = useState(false)
   const [error, setError] = useState('')
 
-  const handlePayment = async (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
+    if (!stripe || !elements) return
+
     setError('')
     setProcessing(true)
 
-    try {
-      if (!bookingId) throw new Error('Missing booking ID')
-      toast.success('Payment processed! Your booking is confirmed.')
-      router.push(`/booking-confirmation?bookingId=${bookingId}`)
-    } catch (err) {
-      const message = err instanceof Error ? err.message : 'Payment failed'
-      setError(message)
-      toast.error(message)
-    } finally {
+    const { error: stripeError } = await stripe.confirmPayment({
+      elements,
+      redirect: 'if_required',
+    })
+
+    if (stripeError) {
+      setError(stripeError.message ?? 'Payment failed')
       setProcessing(false)
+      return
     }
+
+    // The server re-checks with Stripe before marking the booking confirmed.
+    const res = await fetch('/api/confirm-payment', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ bookingId }),
+    })
+
+    if (!res.ok) {
+      const data = await res.json()
+      setError(data.error ?? 'Payment went through but the booking could not be confirmed. Contact support.')
+      setProcessing(false)
+      return
+    }
+
+    toast.success('Payment complete. Your call is booked.')
+    router.push(`/booking-confirmation?bookingId=${bookingId}`)
   }
+
+  return (
+    <form onSubmit={handleSubmit} className="ac-card ac-mt-6">
+      <div className="ac-stack" style={{ '--gap': '24px' } as any}>
+        <PaymentElement />
+        {error && <div style={errorBox}><p className="ac-small" style={{ color: 'var(--ac-danger)', margin: 0 }}>{error}</p></div>}
+        <button type="submit" disabled={!stripe || processing} className="ac-btn ac-btn--block ac-btn--lg">
+          {processing ? 'Processing…' : `Pay £${(amount / 100).toFixed(2)}`}
+        </button>
+        <Link href="/student/dashboard" className="ac-btn ac-btn--secondary ac-btn--block">Cancel</Link>
+      </div>
+    </form>
+  )
+}
+
+export default function Checkout() {
+  const searchParams = useSearchParams()
+  const bookingId = searchParams.get('bookingId')
+
+  const [clientSecret, setClientSecret] = useState('')
+  const [amount, setAmount] = useState(0)
+  const [loading, setLoading] = useState(true)
+  const [error, setError] = useState('')
+
+  useEffect(() => {
+    if (!bookingId) {
+      setError('No booking specified.')
+      setLoading(false)
+      return
+    }
+
+    fetch('/api/create-payment-intent', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ bookingId }),
+    })
+      .then(async res => {
+        const data = await res.json()
+        if (!res.ok) throw new Error(data.error ?? 'Could not start payment')
+        setClientSecret(data.clientSecret)
+        setAmount(data.amount)
+      })
+      .catch(err => setError(err.message))
+      .finally(() => setLoading(false))
+  }, [bookingId])
 
   return (
     <div className="ac-container ac-section">
       <div style={{ maxWidth: '36rem', margin: '0 auto' }}>
         <h1 className="ac-h1">Complete payment</h1>
-        <p className="ac-lede ac-mt-2">45-minute call with {mentorName} • £10.00</p>
+        <p className="ac-lede ac-mt-2">45-minute call{amount ? ` • £${(amount / 100).toFixed(2)}` : ''}</p>
 
-        <form onSubmit={handlePayment} className="ac-card ac-mt-6">
-          <div className="ac-stack" style={{ '--gap': '24px' } as any}>
-            <div className="ac-card ac-card--soft ac-card--sm">
-              <div className="ac-kv">
-                <dt>Call duration</dt><dd>45 minutes</dd>
-                <dt>Price</dt><dd className="ac-num">£10.00</dd>
-              </div>
-            </div>
+        {loading && <p className="ac-muted ac-mt-6">Setting up secure payment…</p>}
 
-            <div className="ac-field">
-              <label className="ac-label">Card details</label>
-              <div className="ac-input" style={{ padding: '12px', textAlign: 'center', color: 'var(--ac-text-soft)' }}>
-                Mock Stripe Element would go here
-              </div>
-              <p className="ac-hint ac-mt-1">Test card: 4242 4242 4242 4242</p>
-            </div>
-
-            {error && <div style={{ padding: '12px 16px', borderLeft: '4px solid var(--ac-danger)', background: 'var(--ac-navy-800)', borderRadius: '0 var(--ac-radius-control) var(--ac-radius-control) 0' }}><p className="ac-small" style={{ color: 'var(--ac-danger)', margin: 0 }}>{error}</p></div>}
-
-            <button type="submit" disabled={processing} className="ac-btn ac-btn--block ac-btn--lg">{processing ? 'Processing...' : 'Pay £10.00'}</button>
-
-            <Link href="/booking-confirmation" className="ac-btn ac-btn--secondary ac-btn--block">Cancel</Link>
+        {!loading && error && (
+          <div className="ac-card ac-mt-6">
+            <div style={errorBox}><p className="ac-small" style={{ color: 'var(--ac-danger)', margin: 0 }}>{error}</p></div>
+            <Link href="/directory" className="ac-btn ac-btn--secondary ac-btn--block ac-mt-4">Back to mentors</Link>
           </div>
-        </form>
+        )}
+
+        {!loading && !error && !stripePromise && (
+          <div className="ac-card ac-mt-6">
+            <div style={errorBox}>
+              <p className="ac-small" style={{ color: 'var(--ac-danger)', margin: 0 }}>
+                Payments are not configured. NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY is missing.
+              </p>
+            </div>
+          </div>
+        )}
+
+        {!loading && !error && stripePromise && clientSecret && bookingId && (
+          <Elements
+            stripe={stripePromise}
+            options={{ clientSecret, appearance: { theme: 'night', variables: { colorPrimary: '#E3B872' } } }}
+          >
+            <PaymentForm bookingId={bookingId} amount={amount} />
+          </Elements>
+        )}
 
         <div className="ac-note ac-mt-6">
-          <p className="ac-small ac-mt-0">Your payment is secure and processed by Stripe. You'll receive a confirmation email immediately after payment.</p>
+          <p className="ac-small ac-mt-0">
+            Payments are handled by Stripe. Your card details never reach ApprentaCall's servers.
+          </p>
         </div>
       </div>
     </div>

@@ -70,3 +70,41 @@ SELECT table_name, column_name, data_type
 FROM information_schema.columns
 WHERE table_name IN ('students', 'apprentices')
 ORDER BY table_name, ordinal_position;
+
+-- ============================================================
+-- 6. BOOKINGS: payment tracking
+-- ============================================================
+ALTER TABLE bookings ADD COLUMN IF NOT EXISTS stripe_payment_intent_id TEXT;
+ALTER TABLE bookings ADD COLUMN IF NOT EXISTS paid_at                  TIMESTAMPTZ;
+-- status values used by the app:
+--   pending_payment | confirmed | completed | cancelled
+ALTER TABLE bookings ALTER COLUMN status SET DEFAULT 'pending_payment';
+
+ALTER TABLE bookings ENABLE ROW LEVEL SECURITY;
+DROP POLICY IF EXISTS "bookings readable" ON bookings;
+CREATE POLICY "bookings readable" ON bookings FOR SELECT USING (TRUE);
+
+-- ============================================================
+-- 7. RATINGS (table was missing entirely)
+-- ============================================================
+CREATE TABLE IF NOT EXISTS ratings (
+  id            UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+  booking_id    UUID REFERENCES bookings(id) ON DELETE CASCADE,
+  student_id    UUID REFERENCES students(id) ON DELETE SET NULL,
+  apprentice_id UUID REFERENCES apprentices(id) ON DELETE CASCADE,
+  rating        INTEGER NOT NULL CHECK (rating BETWEEN 1 AND 5),
+  feedback      TEXT,
+  created_at    TIMESTAMPTZ DEFAULT NOW()
+);
+
+CREATE INDEX IF NOT EXISTS ratings_apprentice_idx ON ratings (apprentice_id);
+CREATE UNIQUE INDEX IF NOT EXISTS ratings_one_per_booking ON ratings (booking_id);
+
+ALTER TABLE ratings ENABLE ROW LEVEL SECURITY;
+DROP POLICY IF EXISTS "ratings readable" ON ratings;
+CREATE POLICY "ratings readable" ON ratings FOR SELECT USING (TRUE);
+
+-- ============================================================
+-- 8. LinkedIn is optional on the signup form, so the column must allow NULL
+-- ============================================================
+ALTER TABLE apprentices ALTER COLUMN linkedin_url DROP NOT NULL;

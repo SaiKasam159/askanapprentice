@@ -11,7 +11,7 @@ const supabase = createClient(
 
 interface Booking {
   id: string
-  scheduled_time: string
+  scheduled_at: string
   call_duration: number
   status: string
   students: { name: string; email: string }
@@ -34,8 +34,8 @@ export default function MentorBookings() {
         const { data, error } = await supabase
           .from('bookings')
           .select('*, students:student_id(name, email)')
-          .eq('mentor_id', mentorId)
-          .order('scheduled_time', { ascending: true })
+          .eq('apprentice_id', mentorId)
+          .order('scheduled_at', { ascending: true })
 
         if (error) throw error
         setBookings(data || [])
@@ -51,8 +51,8 @@ export default function MentorBookings() {
 
   if (loading) return <div className="ac-container ac-section"><p className="ac-muted">Loading...</p></div>
 
-  const upcomingBookings = bookings.filter(b => new Date(b.scheduled_time) > new Date())
-  const completedBookings = bookings.filter(b => new Date(b.scheduled_time) <= new Date())
+  const upcomingBookings = bookings.filter(b => new Date(b.scheduled_at) > new Date())
+  const completedBookings = bookings.filter(b => new Date(b.scheduled_at) <= new Date())
 
   return (
     <div className="ac-container ac-section">
@@ -76,7 +76,7 @@ export default function MentorBookings() {
                   <li key={booking.id} className="ac-card ac-card--sm">
                     <div>
                       <p className="ac-h4">{booking.students.name}</p>
-                      <p className="ac-small ac-muted ac-mt-1">{new Date(booking.scheduled_time).toLocaleString()} • {booking.call_duration} min</p>
+                      <p className="ac-small ac-muted ac-mt-1">{new Date(booking.scheduled_at).toLocaleString()} • {booking.call_duration} min</p>
                       <p className="ac-small ac-mt-2">{booking.students.email}</p>
                     </div>
                     <span className="ac-badge ac-badge--solid ac-mt-3">{booking.status}</span>
@@ -94,7 +94,7 @@ export default function MentorBookings() {
                   <li key={booking.id} className="ac-card ac-card--sm">
                     <div>
                       <p className="ac-h4">{booking.students.name}</p>
-                      <p className="ac-small ac-muted ac-mt-1">{new Date(booking.scheduled_time).toLocaleString()} • {booking.call_duration} min</p>
+                      <p className="ac-small ac-muted ac-mt-1">{new Date(booking.scheduled_at).toLocaleString()} • {booking.call_duration} min</p>
                     </div>
                   </li>
                 ))}

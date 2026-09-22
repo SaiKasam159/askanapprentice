@@ -6,9 +6,11 @@ import Link from 'next/link'
 
 interface Booking {
   id: string
-  scheduled_time: string
+  scheduled_at: string
   call_duration: number
-  mentors: { name: string; company: string }
+  price: number
+  status: string
+  apprentices: { name: string; company: string } | null
 }
 
 export default function BookingConfirmation() {
@@ -26,7 +28,7 @@ export default function BookingConfirmation() {
 
     const fetchBooking = async () => {
       try {
-        const response = await fetch(`/api/bookings/${bookingId}`)
+        const response = await fetch(`/api/bookings?bookingId=${bookingId}`)
         const data = await response.json()
         setBooking(data.booking)
       } catch (err) {
@@ -41,8 +43,8 @@ export default function BookingConfirmation() {
 
   if (loading) return <div className="ac-container ac-section"><p className="ac-muted">Loading...</p></div>
 
-  const scheduledDate = booking?.scheduled_time ? new Date(booking.scheduled_time).toLocaleDateString() : ''
-  const scheduledTime = booking?.scheduled_time ? new Date(booking.scheduled_time).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }) : ''
+  const scheduledDate = booking?.scheduled_at ? new Date(booking.scheduled_at).toLocaleDateString() : ''
+  const scheduledTime = booking?.scheduled_at ? new Date(booking.scheduled_at).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }) : ''
 
   return (
     <div className="ac-container ac-section">
@@ -50,12 +52,12 @@ export default function BookingConfirmation() {
         <div className="ac-card">
           <p style={{ fontSize: '48px', margin: '0 0 16px 0' }}>✓</p>
           <h1 className="ac-h1">Booking confirmed!</h1>
-          <p className="ac-lede ac-mt-4">Your call with {booking?.mentors.name} is booked.</p>
+          <p className="ac-lede ac-mt-4">Your call with {booking?.apprentices?.name} is booked.</p>
 
           {booking && (
             <div className="ac-kv ac-mt-6">
               <dt>Mentor</dt>
-              <dd>{booking.mentors.name} • {booking.mentors.company}</dd>
+              <dd>{booking.apprentices?.name} • {booking.apprentices?.company}</dd>
               <dt>Date</dt>
               <dd>{scheduledDate}</dd>
               <dt>Time</dt>
