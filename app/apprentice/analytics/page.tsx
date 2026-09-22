@@ -31,13 +31,13 @@ export default function MentorAnalytics() {
     const fetchAnalytics = async () => {
       try {
         setLoading(true)
-        const mentorId = localStorage.getItem('mentorId')
-        if (!mentorId) {
+        const apprenticeId = localStorage.getItem('apprenticeId')
+        if (!apprenticeId) {
           router.push('/apprentice/login')
           return
         }
 
-        const response = await fetch(`/api/ratings?mentorId=${mentorId}`)
+        const response = await fetch(`/api/ratings?mentorId=${apprenticeId}`)
         if (!response.ok) throw new Error('Failed to fetch analytics')
 
         const data = await response.json()

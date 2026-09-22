@@ -85,7 +85,6 @@ export default function ApprenticeSignup() {
 
       const data = await response.json()
       localStorage.setItem('apprenticeId', data.id)
-      localStorage.setItem('mentorId', data.id)
       router.push('/apprentice/signup-success')
     } catch (err) {
       setError(err instanceof Error ? err.message : 'An error occurred')

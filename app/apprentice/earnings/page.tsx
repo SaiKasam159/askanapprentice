@@ -31,8 +31,8 @@ export default function MentorEarnings() {
   useEffect(() => {
     const fetchEarnings = async () => {
       try {
-        const mentorId = localStorage.getItem('mentorId')
-        if (!mentorId) {
+        const apprenticeId = localStorage.getItem('apprenticeId')
+        if (!apprenticeId) {
           router.push('/apprentice/login')
           return
         }

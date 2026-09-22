@@ -1,17 +1,25 @@
 import { createClient, type SupabaseClient } from '@supabase/supabase-js'
 
+function requireEnv(name: string): string {
+  const value = process.env[name]
+  if (!value) throw new Error(`Missing required environment variable: ${name}`)
+  return value
+}
+
 export function getSupabase(): SupabaseClient {
-  const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL
-  const supabaseAnonKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY
+  return createClient(
+    requireEnv('NEXT_PUBLIC_SUPABASE_URL'),
+    requireEnv('NEXT_PUBLIC_SUPABASE_ANON_KEY')
+  )
+}
 
-  console.log('Supabase URL:', supabaseUrl)
-  console.log('Supabase Key:', supabaseAnonKey ? supabaseAnonKey.substring(0, 10) + '...' : 'NOT SET')
-
-  if (!supabaseUrl || !supabaseAnonKey) {
-    throw new Error(`Missing Supabase vars. URL: ${!!supabaseUrl}, Key: ${!!supabaseAnonKey}`)
-  }
-
-  return createClient(supabaseUrl, supabaseAnonKey)
+// Server-only. Bypasses RLS and can use auth.admin.*. Never import into client code.
+export function getSupabaseAdmin(): SupabaseClient {
+  return createClient(
+    requireEnv('NEXT_PUBLIC_SUPABASE_URL'),
+    requireEnv('SUPABASE_SERVICE_ROLE_KEY'),
+    { auth: { autoRefreshToken: false, persistSession: false } }
+  )
 }
 
 export const supabase = getSupabase()

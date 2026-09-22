@@ -1,42 +1,43 @@
 import { NextRequest, NextResponse } from 'next/server'
-import { supabase } from '@/lib/supabase'
+import { getSupabase, getSupabaseAdmin } from '@/lib/supabase'
 
 export async function POST(req: NextRequest) {
   try {
-    const body = await req.json()
-    const { email, password, userType } = body
+    const { email, password, userType } = await req.json()
 
     if (!email || !password || !userType) {
-      return NextResponse.json(
-        { error: 'Missing required fields' },
-        { status: 400 }
-      )
+      return NextResponse.json({ error: 'Missing required fields' }, { status: 400 })
     }
 
-    // Supabase Auth - Sign in user
-    const { data: authData, error: authError } = await supabase.auth.signInWithPassword({
+    // Fresh client per request: a shared one would leak session state between users.
+    const { data: authData, error: authError } = await getSupabase().auth.signInWithPassword({
       email,
       password,
     })
 
     if (authError || !authData.user) {
-      return NextResponse.json(
-        { error: 'Invalid email or password' },
-        { status: 401 }
-      )
+      return NextResponse.json({ error: 'Invalid email or password' }, { status: 401 })
     }
 
-    // Fetch user profile based on userType (student or apprentice)
-    const tableName = userType === 'student' ? 'students' : 'apprentices'
-    const { data: userProfile, error: profileError } = await supabase
-      .from(tableName)
-      .select('*')
-      .eq('email', email)
-      .single()
+    const admin = getSupabaseAdmin()
+    const table = userType === 'student' ? 'students' : 'apprentices'
 
-    if (profileError) {
+    let { data: profile } = await admin.from(table).select('*').eq('id', authData.user.id).maybeSingle()
+    if (!profile) {
+      // Accounts created before auth ids were linked are matched on email instead.
+      const { data: byEmail } = await admin.from(table).select('*').eq('email', email).maybeSingle()
+      profile = byEmail
+    }
+
+    if (!profile) {
+      const otherTable = userType === 'student' ? 'apprentices' : 'students'
+      const { data: wrongRole } = await admin.from(otherTable).select('id').eq('email', email).maybeSingle()
       return NextResponse.json(
-        { error: 'User profile not found' },
+        {
+          error: wrongRole
+            ? `This email is registered as a ${userType === 'student' ? 'mentor' : 'student'}. Use the other login page.`
+            : 'No profile found for this account.',
+        },
         { status: 404 }
       )
     }
@@ -46,15 +47,11 @@ export async function POST(req: NextRequest) {
         id: authData.user.id,
         email: authData.user.email,
         userType,
-        profileId: userProfile.id,
+        profileId: profile.id,
       },
-      session: authData.session,
     })
   } catch (error) {
     console.error('Login error:', error)
-    return NextResponse.json(
-      { error: 'An error occurred during login' },
-      { status: 500 }
-    )
+    return NextResponse.json({ error: 'An error occurred during login' }, { status: 500 })
   }
 }

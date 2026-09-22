@@ -1,126 +1,84 @@
 import { NextRequest, NextResponse } from 'next/server'
-import { supabase } from '@/lib/supabase'
+import { getSupabaseAdmin } from '@/lib/supabase'
 
 export async function POST(req: NextRequest) {
   try {
-    const body = await req.json()
     const {
-      name,
-      email,
-      password,
-      apprenticeshipName,
-      company,
-      sector,
-      linkedinUrl,
-      calendlyUrl30,
-      accepts45MinCalls,
-      calendlyUrl45,
-    } = body
+      name, email, password, apprenticeshipName, company, sector,
+      linkedinUrl, calendlyUrl30, accepts45MinCalls, calendlyUrl45,
+    } = await req.json()
 
-    // Validate required fields
-    if (!name || !email || !password || !apprenticeshipName || !company || !sector || !linkedinUrl || !calendlyUrl30) {
-      return NextResponse.json(
-        { error: 'Missing required fields' },
-        { status: 400 }
-      )
+    if (!name || !email || !password || !apprenticeshipName || !company || !sector || !calendlyUrl30) {
+      return NextResponse.json({ error: 'Missing required fields' }, { status: 400 })
     }
-
     if (!email.includes('@')) {
-      return NextResponse.json(
-        { error: 'Invalid email address' },
-        { status: 400 }
-      )
+      return NextResponse.json({ error: 'Please enter a valid email address' }, { status: 400 })
     }
-
     if (password.length < 8) {
-      return NextResponse.json(
-        { error: 'Password must be at least 8 characters' },
-        { status: 400 }
-      )
+      return NextResponse.json({ error: 'Password must be at least 8 characters' }, { status: 400 })
     }
-
-    // Validate URLs
-    if (!linkedinUrl.includes('linkedin.com')) {
-      return NextResponse.json(
-        { error: 'Invalid LinkedIn URL' },
-        { status: 400 }
-      )
+    // LinkedIn is optional, but must be valid when supplied.
+    if (linkedinUrl && !linkedinUrl.includes('linkedin.com')) {
+      return NextResponse.json({ error: 'Please enter a valid LinkedIn URL' }, { status: 400 })
     }
-
     if (!calendlyUrl30.includes('cal.com')) {
-      return NextResponse.json(
-        { error: 'Invalid cal.com URL for 30-minute calls' },
-        { status: 400 }
-      )
+      return NextResponse.json({ error: 'Please enter a valid cal.com URL for 30-minute calls' }, { status: 400 })
+    }
+    if (accepts45MinCalls && !calendlyUrl45?.includes('cal.com')) {
+      return NextResponse.json({ error: 'Please enter a valid cal.com URL for 45-minute calls' }, { status: 400 })
     }
 
-    if (accepts45MinCalls && !calendlyUrl45) {
-      return NextResponse.json(
-        { error: 'Cal.com URL for 45-minute calls is required' },
-        { status: 400 }
-      )
-    }
+    const admin = getSupabaseAdmin()
 
-    if (accepts45MinCalls && !calendlyUrl45.includes('cal.com')) {
-      return NextResponse.json(
-        { error: 'Invalid cal.com URL for 45-minute calls' },
-        { status: 400 }
-      )
-    }
-
-    // Create Supabase Auth user first
-    const { data: authData, error: authError } = await supabase.auth.signUp({
+    const { data: authData, error: authError } = await admin.auth.admin.createUser({
       email,
       password,
-      options: {
-        emailRedirectTo: `${req.headers.get('origin')}/auth/callback`,
-      },
+      email_confirm: true,
+      user_metadata: { name, user_type: 'apprentice' },
     })
 
     if (authError || !authData.user) {
-      return NextResponse.json(
-        { error: authError?.message || 'Failed to create account' },
-        { status: 400 }
-      )
+      const message = /already|registered|exists/i.test(authError?.message ?? '')
+        ? 'An account with this email already exists. Try logging in instead.'
+        : authError?.message || 'Failed to create account'
+      return NextResponse.json({ error: message }, { status: 400 })
     }
 
-    // Create apprentice record (unverified initially)
-    const { data: apprentice, error: apprenticeError } = await supabase
+    const { data: apprentice, error: apprenticeError } = await admin
       .from('apprentices')
-      .insert([
-        {
-          id: authData.user.id,
-          name,
-          email,
-          apprenticeship_name: apprenticeshipName,
-          company,
-          sector,
-          linkedin_url: linkedinUrl,
-          calendly_url_30: calendlyUrl30,
-          accepts_45min_calls: accepts45MinCalls,
-          calendly_url_45: accepts45MinCalls ? calendlyUrl45 : null,
-          verified: false,
-          created_at: new Date().toISOString(),
-        },
-      ])
+      .insert([{
+        id: authData.user.id,
+        name,
+        email,
+        apprenticeship_name: apprenticeshipName,
+        company,
+        sector,
+        linkedin_url: linkedinUrl || null,
+        calendly_url_30: calendlyUrl30,
+        accepts_45min_calls: !!accepts45MinCalls,
+        calendly_url_45: accepts45MinCalls ? calendlyUrl45 : null,
+        verified: false,
+      }])
       .select()
+      .single()
 
     if (apprenticeError) {
-      console.error('Apprentice creation error:', apprenticeError)
+      await admin.auth.admin.deleteUser(authData.user.id)
+      console.error('Apprentice profile insert failed:', apprenticeError)
       return NextResponse.json(
-        { error: 'Failed to create apprentice account' },
+        { error: `Could not create your profile: ${apprenticeError.message}` },
         { status: 500 }
       )
     }
 
     return NextResponse.json({
-      id: apprentice?.[0]?.id,
+      id: apprentice.id,
       message: 'Account created. Your profile will be reviewed before appearing in the directory.',
     })
   } catch (error) {
     console.error('Apprentice signup error:', error)
     return NextResponse.json(
-      { error: 'Internal server error' },
+      { error: error instanceof Error ? error.message : 'Unexpected error during signup' },
       { status: 500 }
     )
   }
