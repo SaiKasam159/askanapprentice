@@ -3,45 +3,23 @@ import { supabase } from '@/lib/supabase'
 
 export async function GET(req: NextRequest) {
   try {
-    const sector = req.nextUrl.searchParams.get('sector')
-    const page = req.nextUrl.searchParams.get('page') || '0'
+    const id = req.nextUrl.searchParams.get('id')
+    
+    if (!id) {
+      return NextResponse.json({ error: 'Missing id parameter' }, { status: 400 })
+    }
 
-    let query = supabase
+    const { data, error } = await supabase
       .from('apprentices')
-      .select('id, first_name, sector, company, bio, average_rating, calendly_link')
+      .select('*')
+      .eq('id', id)
       .eq('verified', true)
+      .single()
 
-    // Filter by sector if provided
-    if (sector && sector !== 'All') {
-      query = query.eq('sector', sector)
-    }
-
-    // Add pagination (10 per page)
-    const pageNum = parseInt(page) || 0
-    const start = pageNum * 10
-    const end = start + 9
-
-    query = query.range(start, end)
-
-    const { data: apprentices, error, count } = await query
-
-    if (error) {
-      return NextResponse.json(
-        { error: 'Failed to fetch apprentices' },
-        { status: 500 }
-      )
-    }
-
-    return NextResponse.json({
-      apprentices: apprentices || [],
-      total: count || 0,
-      page: pageNum,
-    })
+    if (error) throw error
+    return NextResponse.json({ mentor: data })
   } catch (error) {
-    console.error('Get apprentices error:', error)
-    return NextResponse.json(
-      { error: 'Internal server error' },
-      { status: 500 }
-    )
+    console.error('Fetch apprentice error:', error)
+    return NextResponse.json({ error: 'Failed to fetch mentor' }, { status: 500 })
   }
 }

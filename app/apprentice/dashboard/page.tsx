@@ -157,7 +157,13 @@ export default function ApprenticeDashboard() {
         </div>
       )}
 
-      <div className="ac-mt-8">
+      <div className="ac-mt-8" style={{ display: 'flex', gap: '12px', flexWrap: 'wrap' }}>
+        <Link href="/apprentice/analytics" className="ac-btn ac-btn--secondary">
+          View analytics
+        </Link>
+        <Link href="/apprentice/earnings" className="ac-btn ac-btn--secondary">
+          View earnings
+        </Link>
         <Link href="/apprentice/profile" className="ac-btn ac-btn--secondary">
           Edit profile
         </Link>

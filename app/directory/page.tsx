@@ -140,9 +140,7 @@ export default function Directory() {
                 </div>
                 <div style={{ flex: 'none', display: 'flex', gap: '8px', flexDirection: 'column' }}>
                   <a
-                    href={apprentice.calendly_url_30}
-                    target="_blank"
-                    rel="noopener noreferrer"
+                    href={`/booking?mentorId=${apprentice.id}`}
                     className="ac-btn ac-btn--secondary"
                     style={{ whiteSpace: 'nowrap' }}
                   >
@@ -150,9 +148,7 @@ export default function Directory() {
                   </a>
                   {apprentice.accepts_45min_calls && apprentice.calendly_url_45 && (
                     <a
-                      href={apprentice.calendly_url_45}
-                      target="_blank"
-                      rel="noopener noreferrer"
+                      href={`/booking?mentorId=${apprentice.id}`}
                       className="ac-btn ac-btn--secondary"
                       style={{ whiteSpace: 'nowrap' }}
                     >
