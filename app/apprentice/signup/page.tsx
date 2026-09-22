@@ -50,16 +50,16 @@ export default function ApprenticeSignup() {
         throw new Error('Please enter a valid LinkedIn URL')
       }
 
-      if (!formData.calendlyUrl30.includes('calendly.com')) {
-        throw new Error('Please enter a valid Calendly URL for 30-minute calls')
+      if (!formData.calendlyUrl30.includes('cal.com')) {
+        throw new Error('Please enter a valid cal.com URL for 30-minute calls')
       }
 
       if (formData.accepts45MinCalls && !formData.calendlyUrl45) {
-        throw new Error('Please enter a Calendly URL for 45-minute calls')
+        throw new Error('Please enter a cal.com URL for 45-minute calls')
       }
 
-      if (formData.accepts45MinCalls && !formData.calendlyUrl45.includes('calendly.com')) {
-        throw new Error('Please enter a valid Calendly URL for 45-minute calls')
+      if (formData.accepts45MinCalls && !formData.calendlyUrl45.includes('cal.com')) {
+        throw new Error('Please enter a valid cal.com URL for 45-minute calls')
       }
 
       const response = await fetch('/api/apprentice/signup', {
@@ -167,7 +167,7 @@ export default function ApprenticeSignup() {
           </div>
 
           <div className="ac-field">
-            <label className="ac-label" htmlFor="calendlyUrl30">Calendly link for 30-minute calls</label>
+            <label className="ac-label" htmlFor="calendlyUrl30">Cal.com link for 30-minute calls</label>
             <input
               className="ac-input"
               id="calendlyUrl30"
@@ -175,7 +175,7 @@ export default function ApprenticeSignup() {
               type="url"
               value={formData.calendlyUrl30}
               onChange={handleChange}
-              placeholder="https://calendly.com/yourname/30min"
+              placeholder="https://cal.com/yourname/30min"
               disabled={loading}
             />
             <p className="ac-hint ac-mt-1">Students will book 30-minute calls here</p>
@@ -200,7 +200,7 @@ export default function ApprenticeSignup() {
 
           {formData.accepts45MinCalls && (
             <div className="ac-field">
-              <label className="ac-label" htmlFor="calendlyUrl45">Calendly link for 45-minute calls</label>
+              <label className="ac-label" htmlFor="calendlyUrl45">Cal.com link for 45-minute calls</label>
               <input
                 className="ac-input"
                 id="calendlyUrl45"
@@ -208,7 +208,7 @@ export default function ApprenticeSignup() {
                 type="url"
                 value={formData.calendlyUrl45}
                 onChange={handleChange}
-                placeholder="https://calendly.com/yourname/45min"
+                placeholder="https://cal.com/yourname/45min"
                 disabled={loading}
               />
               <p className="ac-hint ac-mt-1">Students will book 45-minute calls here</p>

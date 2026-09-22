@@ -31,23 +31,23 @@ export async function POST(req: NextRequest) {
       )
     }
 
-    if (!calendlyUrl30.includes('calendly.com')) {
+    if (!calendlyUrl30.includes('cal.com')) {
       return NextResponse.json(
-        { error: 'Invalid Calendly URL for 30-minute calls' },
+        { error: 'Invalid cal.com URL for 30-minute calls' },
         { status: 400 }
       )
     }
 
     if (accepts45MinCalls && !calendlyUrl45) {
       return NextResponse.json(
-        { error: 'Calendly URL for 45-minute calls is required' },
+        { error: 'Cal.com URL for 45-minute calls is required' },
         { status: 400 }
       )
     }
 
-    if (accepts45MinCalls && !calendlyUrl45.includes('calendly.com')) {
+    if (accepts45MinCalls && !calendlyUrl45.includes('cal.com')) {
       return NextResponse.json(
-        { error: 'Invalid Calendly URL for 45-minute calls' },
+        { error: 'Invalid cal.com URL for 45-minute calls' },
         { status: 400 }
       )
     }
