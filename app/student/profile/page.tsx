@@ -3,13 +3,9 @@
 import { useEffect, useState } from 'react'
 import { useRouter } from 'next/navigation'
 import Link from 'next/link'
-import { createClient } from '@supabase/supabase-js'
 import { toast } from '@/lib/toast'
+import { apiFetch } from '@/lib/session-client'
 
-const supabase = createClient(
-  process.env.NEXT_PUBLIC_SUPABASE_URL || '',
-  process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY || ''
-)
 
 interface StudentProfile {
   id: string
@@ -46,13 +42,7 @@ export default function StudentProfile() {
           return
         }
 
-        const { data, error } = await supabase
-          .from('students')
-          .select('*')
-          .eq('id', studentId)
-          .single()
-
-        if (error) throw error
+        const { profile: data } = await apiFetch('/api/profile')
         setProfile(data)
         setFormData(data)
       } catch (err) {
@@ -73,15 +63,10 @@ export default function StudentProfile() {
       const studentId = localStorage.getItem('studentId')
       if (!studentId) throw new Error('Not logged in')
 
-      const { error } = await supabase
-        .from('students')
-        .update({
+      await apiFetch('/api/profile', { method: 'PATCH', body: JSON.stringify({
           name: formData.name,
           sectors: formData.sectors,
-        })
-        .eq('id', studentId)
-
-      if (error) throw error
+        }) })
 
       setProfile(formData as StudentProfile)
       setEditing(false)

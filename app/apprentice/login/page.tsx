@@ -3,6 +3,7 @@
 import { useState } from 'react'
 import { useRouter } from 'next/navigation'
 import Link from 'next/link'
+import { saveSession } from '@/lib/session-client'
 
 export default function ApprenticeLogin() {
   const router = useRouter()
@@ -29,9 +30,7 @@ export default function ApprenticeLogin() {
       }
 
       const data = await response.json()
-      localStorage.setItem('apprenticeId', data.user.profileId)
-      localStorage.setItem('userId', data.user.id)
-      localStorage.setItem('userType', 'apprentice')
+      saveSession(data.token, data.user.profileId, 'apprentice')
       router.push('/apprentice/profile')
     } catch (err) {
       setError(err instanceof Error ? err.message : 'An error occurred')

@@ -2,12 +2,8 @@
 
 import { useEffect, useState } from 'react'
 import { useRouter } from 'next/navigation'
-import { createClient } from '@supabase/supabase-js'
+import { apiFetch } from '@/lib/session-client'
 
-const supabase = createClient(
-  process.env.NEXT_PUBLIC_SUPABASE_URL || '',
-  process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY || ''
-)
 
 interface Booking {
   id: string
@@ -31,14 +27,8 @@ export default function MentorBookings() {
           return
         }
 
-        const { data, error } = await supabase
-          .from('bookings')
-          .select('*, students:student_id(name, email)')
-          .eq('apprentice_id', mentorId)
-          .order('scheduled_at', { ascending: true })
-
-        if (error) throw error
-        setBookings(data || [])
+        const { bookings } = await apiFetch('/api/bookings')
+        setBookings(bookings)
       } catch (err) {
         console.error('Failed to load bookings', err)
       } finally {

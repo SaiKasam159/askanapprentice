@@ -3,13 +3,9 @@
 import { useEffect, useState } from 'react'
 import { useRouter } from 'next/navigation'
 import Link from 'next/link'
-import { createClient } from '@supabase/supabase-js'
 import { toast } from '@/lib/toast'
+import { apiFetch } from '@/lib/session-client'
 
-const supabase = createClient(
-  process.env.NEXT_PUBLIC_SUPABASE_URL || '',
-  process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY || ''
-)
 
 interface ApprenticeProfile {
   id: string
@@ -54,13 +50,7 @@ export default function ApprenticeProfile() {
           return
         }
 
-        const { data, error: fetchError } = await supabase
-          .from('apprentices')
-          .select('*')
-          .eq('id', apprenticeId)
-          .single()
-
-        if (fetchError) throw fetchError
+        const { profile: data } = await apiFetch('/api/profile')
         setProfile(data)
         setFormData(data)
         setError('')
@@ -82,9 +72,7 @@ export default function ApprenticeProfile() {
       const apprenticeId = localStorage.getItem('apprenticeId')
       if (!apprenticeId) throw new Error('Not logged in')
 
-      const { error: updateError } = await supabase
-        .from('apprentices')
-        .update({
+      await apiFetch('/api/profile', { method: 'PATCH', body: JSON.stringify({
           name: formData.name,
           apprenticeship_name: formData.apprenticeship_name,
           company: formData.company,
@@ -93,10 +81,7 @@ export default function ApprenticeProfile() {
           calendly_url_30: formData.calendly_url_30,
           calendly_url_45: formData.calendly_url_45,
           accepts_45min_calls: formData.accepts_45min_calls,
-        })
-        .eq('id', apprenticeId)
-
-      if (updateError) throw updateError
+        }) })
 
       setProfile(formData as ApprenticeProfile)
       setEditing(false)

@@ -2,12 +2,8 @@
 
 import { useEffect, useState } from 'react'
 import Link from 'next/link'
-import { createClient } from '@supabase/supabase-js'
+import { apiFetch } from '@/lib/session-client'
 
-const supabase = createClient(
-  process.env.NEXT_PUBLIC_SUPABASE_URL || '',
-  process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY || ''
-)
 
 interface Booking {
   id: string
@@ -42,24 +38,13 @@ export default function ApprenticeDashboard() {
 
     const fetchData = async () => {
       try {
-        const { data: apprenticeData } = await supabase
-          .from('apprentices')
-          .select('*')
-          .eq('id', apprenticeId)
-          .single()
-
-        setApprentice(apprenticeData)
-
-        const { data: bookingsData } = await supabase
-          .from('bookings')
-          .select('*')
-          .eq('apprentice_id', apprenticeId)
-          .order('scheduled_at', { ascending: false })
-
-        setBookings(bookingsData || [])
-
-        const totalEarnings = bookingsData?.reduce((sum, b) => sum + (b.price * 0.15), 0) || 0
-        setEarnings(totalEarnings)
+        const [{ profile }, { bookings: bookingsData }] = await Promise.all([
+          apiFetch('/api/profile'),
+          apiFetch('/api/bookings'),
+        ])
+        setApprentice(profile)
+        setBookings(bookingsData)
+        setEarnings(bookingsData.reduce((sum: number, b: Booking) => sum + Number(b.price) * 0.15, 0))
       } catch (err) {
         console.error('Failed to load dashboard:', err)
       } finally {

@@ -2,13 +2,9 @@
 
 import { useEffect, useState } from 'react'
 import { useRouter } from 'next/navigation'
-import { createClient } from '@supabase/supabase-js'
 import { toast } from '@/lib/toast'
+import { apiFetch } from '@/lib/session-client'
 
-const supabase = createClient(
-  process.env.NEXT_PUBLIC_SUPABASE_URL || '',
-  process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY || ''
-)
 
 const SECTORS = ['Finance', 'Law', 'Engineering', 'Tech', 'Consulting', 'Other']
 
@@ -48,13 +44,7 @@ export default function MentorSettings() {
           return
         }
 
-        const { data, error } = await supabase
-          .from('apprentices')
-          .select('*')
-          .eq('id', apprenticeId)
-          .single()
-
-        if (error) throw error
+        const { profile: data } = await apiFetch('/api/profile')
         setProfile(data)
         setFormData({
           name: data.name,
@@ -82,9 +72,7 @@ export default function MentorSettings() {
 
     setSaving(true)
     try {
-      const { error } = await supabase
-        .from('apprentices')
-        .update({
+      await apiFetch('/api/profile', { method: 'PATCH', body: JSON.stringify({
           name: formData.name,
           company: formData.company,
           sector: formData.sector,
@@ -92,10 +80,7 @@ export default function MentorSettings() {
           calendly_url_30: formData.calendly_url_30,
           accepts_45min_calls: formData.accepts_45min_calls,
           calendly_url_45: formData.accepts_45min_calls ? formData.calendly_url_45 : null,
-        })
-        .eq('id', profile.id)
-
-      if (error) throw error
+        }) })
       toast.success('Profile updated!')
       router.push('/apprentice/profile')
     } catch (err) {

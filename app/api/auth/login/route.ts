@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { getSupabase, getSupabaseAdmin } from '@/lib/supabase'
+import { createSessionToken, type Role } from '@/lib/session'
 
 export async function POST(req: NextRequest) {
   try {
@@ -43,6 +44,7 @@ export async function POST(req: NextRequest) {
     }
 
     return NextResponse.json({
+      token: createSessionToken(profile.id, userType as Role),
       user: {
         id: authData.user.id,
         email: authData.user.email,

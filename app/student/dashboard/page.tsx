@@ -3,12 +3,8 @@
 import { useEffect, useState } from 'react'
 import { useRouter } from 'next/navigation'
 import Link from 'next/link'
-import { createClient } from '@supabase/supabase-js'
+import { apiFetch } from '@/lib/session-client'
 
-const supabase = createClient(
-  process.env.NEXT_PUBLIC_SUPABASE_URL || '',
-  process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY || ''
-)
 
 interface StudentProfile {
   id: string
@@ -43,25 +39,12 @@ export default function StudentDashboard() {
           return
         }
 
-        const { data, error: fetchError } = await supabase
-          .from('students')
-          .select('*')
-          .eq('id', studentId)
-          .single()
-
-        if (fetchError) throw fetchError
-        setProfile(data)
-
-        const { data: bookingsData } = await supabase
-          .from('bookings')
-          .select('*, apprentices:apprentice_id(name)')
-          .eq('student_id', studentId)
-          .order('scheduled_at', { ascending: true })
-
-        if (bookingsData) {
-          setBookings(bookingsData)
-        }
-
+        const [{ profile }, { bookings }] = await Promise.all([
+          apiFetch('/api/profile'),
+          apiFetch('/api/bookings'),
+        ])
+        setProfile(profile)
+        setBookings(bookings)
         setError('')
       } catch (err) {
         setError(err instanceof Error ? err.message : 'Failed to load profile')

@@ -1,12 +1,6 @@
 'use client'
 
 import { useEffect, useState } from 'react'
-import { createClient } from '@supabase/supabase-js'
-
-const supabase = createClient(
-  process.env.NEXT_PUBLIC_SUPABASE_URL || '',
-  process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY || ''
-)
 
 interface Apprentice {
   id: string
@@ -14,10 +8,8 @@ interface Apprentice {
   apprenticeship_name: string
   company: string
   sector: string
-  linkedin_url: string
-  calendly_url_30: string
+  linkedin_url: string | null
   accepts_45min_calls: boolean
-  calendly_url_45: string | null
   verified: boolean
 }
 
@@ -40,19 +32,11 @@ export default function Directory() {
     const fetchApprentices = async () => {
       try {
         setLoading(true)
-        let query = supabase
-          .from('apprentices')
-          .select('*')
-          .eq('verified', true)
-
-        if (selectedSector) {
-          query = query.eq('sector', selectedSector)
-        }
-
-        const { data, error: fetchError } = await query
-
-        if (fetchError) throw fetchError
-        setApprentices(data || [])
+        const params = selectedSector ? `?sector=${encodeURIComponent(selectedSector)}` : ''
+        const res = await fetch(`/api/apprentices${params}`)
+        const data = await res.json()
+        if (!res.ok) throw new Error(data.error ?? 'Failed to load mentors')
+        setApprentices(data.mentors)
         setError('')
       } catch (err) {
         setError(err instanceof Error ? err.message : 'Failed to load mentors')
@@ -153,7 +137,7 @@ export default function Directory() {
                   >
                     📅 Book 30 min
                   </a>
-                  {apprentice.accepts_45min_calls && apprentice.calendly_url_45 && (
+                  {apprentice.accepts_45min_calls && (
                     <a
                       href={`/booking?mentorId=${apprentice.id}`}
                       className="ac-btn ac-btn--secondary ac-btn--block"

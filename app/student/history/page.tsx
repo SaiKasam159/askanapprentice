@@ -3,12 +3,8 @@
 import { useEffect, useState } from 'react'
 import { useRouter } from 'next/navigation'
 import Link from 'next/link'
-import { createClient } from '@supabase/supabase-js'
+import { apiFetch } from '@/lib/session-client'
 
-const supabase = createClient(
-  process.env.NEXT_PUBLIC_SUPABASE_URL || '',
-  process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY || ''
-)
 
 interface CallHistory {
   id: string
@@ -32,15 +28,9 @@ export default function CallHistory() {
           return
         }
 
-        const { data, error } = await supabase
-          .from('bookings')
-          .select('*, apprentices:apprentice_id(name, company)')
-          .eq('student_id', studentId)
-          .lt('scheduled_at', new Date().toISOString())
-          .order('scheduled_at', { ascending: false })
-
-        if (error) throw error
-        setCalls(data || [])
+        const { bookings } = await apiFetch('/api/bookings')
+        const now = Date.now()
+        setCalls(bookings.filter((b: CallHistory) => new Date(b.scheduled_at).getTime() < now))
       } catch (err) {
         console.error('Failed to load call history', err)
       } finally {

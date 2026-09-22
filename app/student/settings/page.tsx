@@ -2,13 +2,9 @@
 
 import { useEffect, useState } from 'react'
 import { useRouter } from 'next/navigation'
-import { createClient } from '@supabase/supabase-js'
 import { toast } from '@/lib/toast'
+import { apiFetch } from '@/lib/session-client'
 
-const supabase = createClient(
-  process.env.NEXT_PUBLIC_SUPABASE_URL || '',
-  process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY || ''
-)
 
 const SECTORS = ['Finance', 'Law', 'Engineering', 'Tech', 'Consulting', 'Other']
 
@@ -40,13 +36,7 @@ export default function StudentSettings() {
           return
         }
 
-        const { data, error } = await supabase
-          .from('students')
-          .select('*')
-          .eq('id', studentId)
-          .single()
-
-        if (error) throw error
+        const { profile: data } = await apiFetch('/api/profile')
         setProfile(data)
         setFormData({
           name: data.name,
@@ -79,16 +69,11 @@ export default function StudentSettings() {
 
     setSaving(true)
     try {
-      const { error } = await supabase
-        .from('students')
-        .update({
+      await apiFetch('/api/profile', { method: 'PATCH', body: JSON.stringify({
           name: formData.name,
           sectors: formData.sectors,
           linkedin_url: formData.linkedin_url || null,
-        })
-        .eq('id', profile.id)
-
-      if (error) throw error
+        }) })
       toast.success('Profile updated!')
       router.push('/student/dashboard')
     } catch (err) {

@@ -3,6 +3,7 @@
 import { useState } from 'react'
 import { useRouter } from 'next/navigation'
 import Link from 'next/link'
+import { saveSession } from '@/lib/session-client'
 
 export default function StudentLogin() {
   const router = useRouter()
@@ -37,9 +38,7 @@ export default function StudentLogin() {
       }
 
       const data = await response.json()
-      localStorage.setItem('studentId', data.user.profileId)
-      localStorage.setItem('userId', data.user.id)
-      localStorage.setItem('userType', 'student')
+      saveSession(data.token, data.user.profileId, 'student')
       router.push('/student/dashboard')
     } catch (err) {
       setError(err instanceof Error ? err.message : 'An error occurred')

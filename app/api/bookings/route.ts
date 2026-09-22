@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { getSupabaseAdmin } from '@/lib/supabase'
+import { sessionFrom } from '@/lib/session'
 
 // Price in GBP. Never taken from the client: a browser could otherwise ask to pay 1p.
 const CALL_PRICES: Record<number, number> = { 30: 0, 45: 10 }
@@ -45,17 +46,12 @@ export async function POST(req: NextRequest) {
 
 export async function GET(req: NextRequest) {
   try {
-    const studentId = req.nextUrl.searchParams.get('studentId')
     const bookingId = req.nextUrl.searchParams.get('bookingId')
-
-    if (!studentId && !bookingId) {
-      return NextResponse.json({ error: 'Provide studentId or bookingId' }, { status: 400 })
-    }
-
     const admin = getSupabaseAdmin()
+
     const query = admin
       .from('bookings')
-      .select('*, apprentices:apprentice_id(name, company, sector)')
+      .select('*, apprentices:apprentice_id(name, company, sector), students:student_id(name, email)')
 
     if (bookingId) {
       const { data, error } = await query.eq('id', bookingId).maybeSingle()
@@ -64,7 +60,13 @@ export async function GET(req: NextRequest) {
       return NextResponse.json({ booking: data })
     }
 
-    const { data, error } = await query.eq('student_id', studentId).order('scheduled_at', { ascending: true })
+    // Listing is always scoped to the signed-in account, so a caller cannot
+    // read another person's bookings by passing their id.
+    const session = sessionFrom(req)
+    if (!session) return NextResponse.json({ error: 'Not signed in' }, { status: 401 })
+
+    const column = session.role === 'student' ? 'student_id' : 'apprentice_id'
+    const { data, error } = await query.eq(column, session.userId).order('scheduled_at', { ascending: true })
     if (error) throw error
     return NextResponse.json({ bookings: data ?? [] })
   } catch (error) {

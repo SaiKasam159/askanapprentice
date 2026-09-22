@@ -1,12 +1,6 @@
 'use client'
 
 import { useState } from 'react'
-import { createClient } from '@supabase/supabase-js'
-
-const supabase = createClient(
-  process.env.NEXT_PUBLIC_SUPABASE_URL || '',
-  process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY || ''
-)
 
 interface UnverifiedApprentice {
   id: string
@@ -29,33 +23,28 @@ export default function AdminVerify() {
   const [error, setError] = useState('')
   const [verifyingId, setVerifyingId] = useState<string | null>(null)
 
-  const ADMIN_PASSWORD = process.env.NEXT_PUBLIC_ADMIN_PASSWORD || 'admin'
-
-  const handleLogin = (e: React.FormEvent) => {
+  // The password is checked on the server; it is never shipped to the browser.
+  const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault()
-    if (password === ADMIN_PASSWORD) {
-      setAuthenticated(true)
-      setError('')
-      fetchApprentices()
-    } else {
-      setError('Invalid password')
-    }
+    setError('')
+    const ok = await fetchApprentices(password)
+    if (ok) setAuthenticated(true)
+    else setError('Invalid password')
   }
 
-  const fetchApprentices = async () => {
+  const fetchApprentices = async (adminPassword: string) => {
     try {
       setLoading(true)
-      const { data, error: fetchError } = await supabase
-        .from('apprentices')
-        .select('*')
-        .eq('verified', false)
-        .order('created_at', { ascending: false })
-
-      if (fetchError) throw fetchError
-      setApprentices(data || [])
+      const res = await fetch('/api/admin/apprentices', { headers: { 'x-admin-password': adminPassword } })
+      if (res.status === 401) return false
+      const data = await res.json()
+      if (!res.ok) throw new Error(data.error ?? 'Failed to load mentors')
+      setApprentices(data.apprentices)
       setError('')
+      return true
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Failed to load mentors')
+      return false
     } finally {
       setLoading(false)
     }
@@ -64,12 +53,13 @@ export default function AdminVerify() {
   const verifyApprentice = async (id: string) => {
     try {
       setVerifyingId(id)
-      const { error: updateError } = await supabase
-        .from('apprentices')
-        .update({ verified: true })
-        .eq('id', id)
-
-      if (updateError) throw updateError
+      const res = await fetch('/api/admin/apprentices', {
+        method: 'PATCH',
+        headers: { 'Content-Type': 'application/json', 'x-admin-password': password },
+        body: JSON.stringify({ id, verified: true }),
+      })
+      const data = await res.json()
+      if (!res.ok) throw new Error(data.error ?? 'Failed to verify mentor')
 
       setApprentices(prev => prev.filter(a => a.id !== id))
       setError('')
