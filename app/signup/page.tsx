@@ -4,14 +4,7 @@ import { useState } from 'react'
 import { useRouter } from 'next/navigation'
 import Link from 'next/link'
 
-const SECTORS = [
-  'Finance',
-  'Law',
-  'Engineering',
-  'Tech',
-  'Consulting',
-  'Other',
-]
+const SECTORS = ['Finance', 'Law', 'Engineering', 'Tech', 'Consulting', 'Other']
 
 export default function StudentSignup() {
   const router = useRouter()
@@ -30,11 +23,7 @@ export default function StudentSignup() {
   const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) => {
     const { name, value, type } = e.target
     const checked = (e.target as HTMLInputElement).checked
-
-    setFormData(prev => ({
-      ...prev,
-      [name]: type === 'checkbox' ? checked : value
-    }))
+    setFormData(prev => ({ ...prev, [name]: type === 'checkbox' ? checked : value }))
   }
 
   const handleSectorChange = (sector: string) => {
@@ -95,7 +84,7 @@ export default function StudentSignup() {
 
       const data = await response.json()
       localStorage.setItem('studentId', data.id)
-      router.push('/directory')
+      router.push('/signup-success')
     } catch (err) {
       setError(err instanceof Error ? err.message : 'An error occurred')
     } finally {
@@ -105,7 +94,7 @@ export default function StudentSignup() {
 
   return (
     <div className="ac-container ac-section">
-      <div className="ac-stack" style={{ maxWidth: '56rem', marginBottom: '48px' }}>
+      <div className="ac-stack" style={{ maxWidth: '56rem', marginBottom: '48px', '--gap': '12px' } as any}>
         <h1 className="ac-h1">Book a call with a mentor</h1>
         <p className="ac-lede">Tell us about yourself and the sectors you're interested in. We'll help you find the right apprentice to talk to.</p>
       </div>
@@ -114,46 +103,19 @@ export default function StudentSignup() {
         <div className="ac-stack" style={{ '--gap': '24px' } as any}>
           <div className="ac-field">
             <label className="ac-label" htmlFor="name">Your name</label>
-            <input
-              className="ac-input"
-              id="name"
-              name="name"
-              type="text"
-              value={formData.name}
-              onChange={handleChange}
-              placeholder="e.g., Alex Johnson"
-              disabled={loading}
-            />
+            <input className="ac-input" id="name" name="name" type="text" value={formData.name} onChange={handleChange} placeholder="e.g., Alex Johnson" disabled={loading} />
           </div>
 
           <div className="ac-field">
             <label className="ac-label" htmlFor="email">Email address</label>
-            <input
-              className="ac-input"
-              id="email"
-              name="email"
-              type="email"
-              value={formData.email}
-              onChange={handleChange}
-              placeholder="your@email.com"
-              disabled={loading}
-            />
+            <input className="ac-input" id="email" name="email" type="email" value={formData.email} onChange={handleChange} placeholder="your@email.com" disabled={loading} />
             <p className="ac-hint ac-mt-1">We'll send your booking link here</p>
           </div>
 
           <div className="ac-field">
             <label className="ac-label" htmlFor="linkedinUrl">LinkedIn URL</label>
-            <input
-              className="ac-input"
-              id="linkedinUrl"
-              name="linkedinUrl"
-              type="url"
-              value={formData.linkedinUrl}
-              onChange={handleChange}
-              placeholder="https://linkedin.com/in/yourprofile"
-              disabled={loading}
-            />
-            <p className="ac-hint ac-mt-1">Helps mentors learn more about you (optional but recommended)</p>
+            <input className="ac-input" id="linkedinUrl" name="linkedinUrl" type="url" value={formData.linkedinUrl} onChange={handleChange} placeholder="https://linkedin.com/in/yourprofile" disabled={loading} />
+            <p className="ac-hint ac-mt-1">Helps mentors learn more about you (optional)</p>
           </div>
 
           <div className="ac-field">
@@ -161,68 +123,33 @@ export default function StudentSignup() {
             <div className="ac-stack" style={{ '--gap': '8px' } as any}>
               {SECTORS.map(sector => (
                 <label key={sector} className="ac-check" style={{ cursor: 'pointer' }}>
-                  <input
-                    type="checkbox"
-                    checked={formData.sectors.includes(sector)}
-                    onChange={() => handleSectorChange(sector)}
-                    disabled={loading}
-                  />
+                  <input type="checkbox" checked={formData.sectors.includes(sector)} onChange={() => handleSectorChange(sector)} disabled={loading} />
                   <span>{sector}</span>
                 </label>
               ))}
             </div>
-            {formData.sectors.length === 0 && (
-              <p className="ac-error ac-mt-1">Select at least one sector</p>
-            )}
+            {formData.sectors.length === 0 && <p className="ac-error ac-mt-1">Select at least one sector</p>}
           </div>
 
           <div className="ac-stack" style={{ '--gap': '12px' } as any}>
             <label style={{ display: 'flex', gap: '12px', cursor: 'pointer', alignItems: 'flex-start' }}>
-              <input
-                type="checkbox"
-                checked={formData.ageVerified}
-                onChange={handleAgeChange}
-                disabled={loading}
-                style={{ marginTop: '4px' }}
-              />
+              <input type="checkbox" checked={formData.ageVerified} onChange={handleAgeChange} disabled={loading} style={{ marginTop: '4px' }} />
               <span className="ac-small">I confirm I am 16 or older</span>
             </label>
-
             {isUnder16 && (
               <div className="ac-field">
                 <label className="ac-label" htmlFor="guardianEmail">Parent/Guardian Email</label>
-                <input
-                  className="ac-input"
-                  id="guardianEmail"
-                  name="guardianEmail"
-                  type="email"
-                  value={formData.guardianEmail}
-                  onChange={handleChange}
-                  placeholder="parent@email.com"
-                  disabled={loading}
-                />
+                <input className="ac-input" id="guardianEmail" name="guardianEmail" type="email" value={formData.guardianEmail} onChange={handleChange} placeholder="parent@email.com" disabled={loading} />
                 <p className="ac-hint ac-mt-1">We'll send a consent form to verify approval</p>
               </div>
             )}
           </div>
 
-          {error && (
-            <div style={{ padding: '12px 16px', borderLeft: '4px solid var(--ac-danger)', background: 'var(--ac-navy-800)', borderRadius: '0 var(--ac-radius-control) var(--ac-radius-control) 0' }}>
-              <p className="ac-small" style={{ color: 'var(--ac-danger)', margin: 0 }}>{error}</p>
-            </div>
-          )}
+          {error && <div style={{ padding: '12px 16px', borderLeft: '4px solid var(--ac-danger)', background: 'var(--ac-navy-800)', borderRadius: '0 var(--ac-radius-control) var(--ac-radius-control) 0' }}><p className="ac-small" style={{ color: 'var(--ac-danger)', margin: 0 }}>{error}</p></div>}
 
-          <button
-            type="submit"
-            disabled={loading}
-            className="ac-btn ac-btn--block ac-btn--lg"
-          >
-            {loading ? 'Creating account...' : 'Continue to mentors'}
-          </button>
+          <button type="submit" disabled={loading} className="ac-btn ac-btn--block ac-btn--lg">{loading ? 'Creating account...' : 'Continue to mentors'}</button>
 
-          <p className="ac-small ac-muted ac-center">
-            Are you an apprentice? <Link href="/apprentice/signup" className="ac-link">Become a mentor</Link>
-          </p>
+          <p className="ac-small ac-muted ac-center">Are you an apprentice? <Link href="/apprentice/signup" className="ac-link">Become a mentor</Link></p>
         </div>
       </form>
     </div>

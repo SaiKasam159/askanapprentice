@@ -1,57 +1,25 @@
 'use client'
 
-import { useSearchParams } from 'next/navigation'
 import Link from 'next/link'
 
-export default function SignupSuccess() {
-  const searchParams = useSearchParams()
-  const email = searchParams.get('email')
-
+export default function ApprenticeSignupSuccess() {
   return (
-    <div className="max-w-md mx-auto py-12 text-center">
-      <div className="bg-green-50 border border-green-200 rounded-lg p-8">
-        <div className="text-5xl mb-4">✓</div>
-        <h2 className="text-2xl font-bold mb-2 text-green-600">Account Created!</h2>
+    <div className="ac-container ac-section">
+      <div style={{ maxWidth: '36rem', margin: '0 auto', textAlign: 'center' }}>
+        <div className="ac-card">
+          <p style={{ fontSize: '48px', margin: '0 0 16px 0' }}>✓</p>
+          <h1 className="ac-h1">Welcome to ApprentaCall!</h1>
+          <p className="ac-lede ac-mt-4">Your mentor profile has been created. We'll review it and add you to the directory within 24 hours.</p>
 
-        <div className="space-y-4 text-gray-700">
-          <p>
-            Your apprentice profile has been submitted for review.
-          </p>
-
-          {email && (
-            <p className="text-sm text-gray-600">
-              Confirmation sent to: <strong>{email}</strong>
-            </p>
-          )}
-
-          <div className="bg-white rounded p-4 mt-6 text-left">
-            <h3 className="font-semibold mb-3">What happens next?</h3>
-            <ol className="space-y-2 text-sm text-gray-600">
-              <li>
-                <strong>1. Profile Review</strong>
-                <p>Our team reviews your profile for completeness and authenticity</p>
-              </li>
-              <li>
-                <strong>2. Approval</strong>
-                <p>Once approved, you'll appear in the student directory</p>
-              </li>
-              <li>
-                <strong>3. Book Calls</strong>
-                <p>Students can book 30-minute calls with you via your Calendly link</p>
-              </li>
-            </ol>
+          <div className="ac-stack ac-mt-6" style={{ '--gap': '12px' } as any}>
+            <Link href="/apprentice/profile" className="ac-btn ac-btn--block ac-btn--lg">View your profile</Link>
+            <Link href="/apprentice/login" className="ac-btn ac-btn--secondary ac-btn--block">Log in</Link>
           </div>
 
-          <p className="text-sm text-gray-600 pt-4">
-            You'll receive an email when your profile is approved. Typically within 24 hours.
-          </p>
+          <div className="ac-note ac-mt-6">
+            <p className="ac-small ac-mt-0"><strong>What happens next?</strong> Our team will verify your application. Once approved, you'll start receiving booking requests from students. You control your availability through cal.com.</p>
+          </div>
         </div>
-      </div>
-
-      <div className="mt-8 space-y-4">
-        <Link href="/" className="block text-blue-600 hover:underline font-semibold">
-          Back to home
-        </Link>
       </div>
     </div>
   )
