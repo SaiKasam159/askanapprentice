@@ -7,10 +7,10 @@ export async function POST(req: NextRequest) {
   try {
     const {
       name, email, password, apprenticeshipName, company, sector,
-      linkedinUrl, calendlyUrl30, accepts45MinCalls, calendlyUrl45,
+      linkedinUrl, accepts45MinCalls,
     } = await req.json()
 
-    if (!name || !email || !password || !apprenticeshipName || !company || !sector || !calendlyUrl30) {
+    if (!name || !email || !password || !apprenticeshipName || !company || !sector) {
       return NextResponse.json({ error: 'Missing required fields' }, { status: 400 })
     }
     if (!email.includes('@')) {
@@ -22,12 +22,6 @@ export async function POST(req: NextRequest) {
     // LinkedIn is optional, but must be valid when supplied.
     if (linkedinUrl && !linkedinUrl.includes('linkedin.com')) {
       return NextResponse.json({ error: 'Please enter a valid LinkedIn URL' }, { status: 400 })
-    }
-    if (!calendlyUrl30.includes('cal.com')) {
-      return NextResponse.json({ error: 'Please enter a valid cal.com URL for 30-minute calls' }, { status: 400 })
-    }
-    if (accepts45MinCalls && !calendlyUrl45?.includes('cal.com')) {
-      return NextResponse.json({ error: 'Please enter a valid cal.com URL for 45-minute calls' }, { status: 400 })
     }
 
     // Fail before creating anything if sessions cannot be signed: otherwise the
@@ -60,9 +54,7 @@ export async function POST(req: NextRequest) {
         company,
         sector,
         linkedin_url: linkedinUrl || null,
-        calendly_url_30: calendlyUrl30,
         accepts_45min_calls: !!accepts45MinCalls,
-        calendly_url_45: accepts45MinCalls ? calendlyUrl45 : null,
         verified: false,
       }])
       .select()

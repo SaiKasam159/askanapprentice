@@ -4,9 +4,9 @@ import { getSupabaseAdmin } from '@/lib/supabase'
 /**
  * Public mentor directory.
  *
- * The column list is explicit and deliberately excludes email and the cal.com
- * links. Exposing a booking link would let a student book the mentor directly
- * and skip payment, so those never leave the server.
+ * The column list is explicit and deliberately excludes email and private
+ * fields. Everything here is shown publicly in the directory.
+
  */
 const PUBLIC_COLUMNS =
   'id, name, apprenticeship_name, company, sector, linkedin_url, verified, accepts_45min_calls'

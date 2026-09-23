@@ -17,7 +17,7 @@ export default function ApprenticeSignupSuccess() {
           </div>
 
           <div className="ac-note ac-mt-6">
-            <p className="ac-small ac-mt-0"><strong>What happens next?</strong> Our team will verify your application. Once approved, you'll start receiving booking requests from students. You control your availability through cal.com.</p>
+            <p className="ac-small ac-mt-0"><strong>What happens next?</strong> Our team will verify your application. Once approved, you'll start receiving booking requests from students. Set your availability from your dashboard and students book inside it.</p>
           </div>
         </div>
       </div>

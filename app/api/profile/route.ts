@@ -10,7 +10,7 @@ const EDITABLE = {
   student: ['name', 'linkedin_url', 'sectors'],
   apprentice: [
     'name', 'apprenticeship_name', 'company', 'sector', 'linkedin_url',
-    'calendly_url_30', 'calendly_url_45', 'accepts_45min_calls',
+    'accepts_45min_calls',
   ],
 } as const
 

@@ -1,6 +1,7 @@
 'use client'
 
 import { useEffect, useState } from 'react'
+import { CompanyLogo } from '@/app/components/CompanyLogo'
 
 interface Apprentice {
   id: string
@@ -112,7 +113,12 @@ export default function Directory() {
               <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', gap: '16px' }}>
                 <div style={{ flex: 1 }}>
                   <h3 className="ac-h3">{apprentice.name}</h3>
-                  <p className="ac-body ac-muted ac-mt-1">{apprentice.apprenticeship_name} • {apprentice.company}</p>
+                  <p className="ac-body ac-muted ac-mt-1" style={{ display: 'flex', alignItems: 'center', gap: '6px', flexWrap: 'wrap' }}>
+                    <span>{apprentice.apprenticeship_name}</span>
+                    <span aria-hidden="true">•</span>
+                    <CompanyLogo company={apprentice.company} />
+                    <span>{apprentice.company}</span>
+                  </p>
                   <div style={{ marginTop: '12px', display: 'flex', gap: '8px', alignItems: 'center', flexWrap: 'wrap' }}>
                     <span className="ac-badge ac-badge--solid">{apprentice.sector}</span>
                     {apprentice.linkedin_url && (

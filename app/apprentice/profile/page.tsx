@@ -15,9 +15,7 @@ interface ApprenticeProfile {
   company: string
   sector: string
   linkedin_url: string
-  calendly_url_30: string
   accepts_45min_calls: boolean
-  calendly_url_45: string | null
   verified: boolean
   created_at: string
 }
@@ -79,8 +77,6 @@ export default function ApprenticeProfile() {
           company: formData.company,
           sector: formData.sector,
           linkedin_url: formData.linkedin_url,
-          calendly_url_30: formData.calendly_url_30,
-          calendly_url_45: formData.calendly_url_45,
           accepts_45min_calls: formData.accepts_45min_calls,
         }) })
 
@@ -161,10 +157,6 @@ export default function ApprenticeProfile() {
               <input className="ac-input" id="linkedin" type="url" value={formData.linkedin_url || ''} onChange={(e) => setFormData({ ...formData, linkedin_url: e.target.value })} placeholder="https://linkedin.com/in/yourprofile" disabled={saving} />
             </div>
 
-            <div className="ac-field">
-              <label className="ac-label" htmlFor="cal30">Cal.com link (30 min)</label>
-              <input className="ac-input" id="cal30" type="url" value={formData.calendly_url_30 || ''} onChange={(e) => setFormData({ ...formData, calendly_url_30: e.target.value })} disabled={saving} />
-            </div>
 
             <div className="ac-field">
               <label className="ac-check">
@@ -173,12 +165,6 @@ export default function ApprenticeProfile() {
               </label>
             </div>
 
-            {formData.accepts_45min_calls && (
-              <div className="ac-field">
-                <label className="ac-label" htmlFor="cal45">Cal.com link (45 min)</label>
-                <input className="ac-input" id="cal45" type="url" value={formData.calendly_url_45 || ''} onChange={(e) => setFormData({ ...formData, calendly_url_45: e.target.value })} disabled={saving} />
-              </div>
-            )}
 
             <div style={{ display: 'flex', gap: '12px' }}>
               <button type="submit" disabled={saving} className="ac-btn ac-btn--block">{saving ? 'Saving...' : 'Save changes'}</button>

@@ -3,6 +3,7 @@
 import { useEffect, useState } from 'react'
 import { useParams } from 'next/navigation'
 import Link from 'next/link'
+import { CompanyLogo } from '@/app/components/CompanyLogo'
 
 interface Mentor {
   id: string
@@ -84,7 +85,11 @@ export default function MentorProfile() {
             <span className="ac-badge ac-badge--solid">{mentor.sector}</span>
             {mentor.verified && <span className="ac-verified">✓ Verified</span>}
           </div>
-          <p className="ac-lede ac-mt-2">{mentor.apprenticeship_name} at {mentor.company}</p>
+          <p className="ac-lede ac-mt-2" style={{ display: 'flex', alignItems: 'center', gap: '8px', flexWrap: 'wrap' }}>
+            <span>{mentor.apprenticeship_name} at</span>
+            <CompanyLogo company={mentor.company} size={24} />
+            <span>{mentor.company}</span>
+          </p>
 
           {mentor.linkedin_url && (
             <a

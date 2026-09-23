@@ -26,9 +26,7 @@ export default function ApprenticeSignup() {
     company: '',
     sector: '',
     linkedinUrl: '',
-    calendlyUrl30: '',
     accepts45MinCalls: false,
-    calendlyUrl45: '',
   })
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement | HTMLTextAreaElement>) => {
@@ -46,7 +44,7 @@ export default function ApprenticeSignup() {
     setLoading(true)
 
     try {
-      if (!formData.name || !formData.email || !formData.password || !formData.apprenticeshipName || !formData.company || !formData.sector || !formData.calendlyUrl30) {
+      if (!formData.name || !formData.email || !formData.password || !formData.apprenticeshipName || !formData.company || !formData.sector) {
         throw new Error('All required fields must be filled')
       }
 
@@ -62,17 +60,8 @@ export default function ApprenticeSignup() {
         throw new Error('Please enter a valid LinkedIn URL')
       }
 
-      if (!formData.calendlyUrl30.includes('cal.com')) {
-        throw new Error('Please enter a valid cal.com URL for 30-minute calls')
-      }
 
-      if (formData.accepts45MinCalls && !formData.calendlyUrl45) {
-        throw new Error('Please enter a cal.com URL for 45-minute calls')
-      }
 
-      if (formData.accepts45MinCalls && !formData.calendlyUrl45.includes('cal.com')) {
-        throw new Error('Please enter a valid cal.com URL for 45-minute calls')
-      }
 
       const response = await fetch('/api/apprentice/signup', {
         method: 'POST',
@@ -207,31 +196,13 @@ export default function ApprenticeSignup() {
             <p className="ac-hint ac-mt-1">Helps students learn more about you</p>
           </div>
 
-          <div className="ac-field">
-            <label className="ac-label" htmlFor="calendlyUrl30">Cal.com link for 30-minute calls</label>
-            <input
-              className="ac-input"
-              id="calendlyUrl30"
-              name="calendlyUrl30"
-              type="url"
-              value={formData.calendlyUrl30}
-              onChange={handleChange}
-              placeholder="https://cal.com/yourname/30min"
-              disabled={loading}
-            />
-            <p className="ac-hint ac-mt-1">Students will book 30-minute calls here</p>
-          </div>
 
           <div className="ac-field">
             <label style={{ display: 'flex', gap: '12px', cursor: 'pointer', alignItems: 'flex-start' }}>
               <input
                 type="checkbox"
                 checked={formData.accepts45MinCalls}
-                onChange={(e) => setFormData(prev => ({
-                  ...prev,
-                  accepts45MinCalls: e.target.checked,
-                  calendlyUrl45: e.target.checked ? prev.calendlyUrl45 : ''
-                }))}
+                onChange={(e) => setFormData(prev => ({ ...prev, accepts45MinCalls: e.target.checked }))}
                 disabled={loading}
                 style={{ marginTop: '4px' }}
               />
@@ -239,22 +210,6 @@ export default function ApprenticeSignup() {
             </label>
           </div>
 
-          {formData.accepts45MinCalls && (
-            <div className="ac-field">
-              <label className="ac-label" htmlFor="calendlyUrl45">Cal.com link for 45-minute calls</label>
-              <input
-                className="ac-input"
-                id="calendlyUrl45"
-                name="calendlyUrl45"
-                type="url"
-                value={formData.calendlyUrl45}
-                onChange={handleChange}
-                placeholder="https://cal.com/yourname/45min"
-                disabled={loading}
-              />
-              <p className="ac-hint ac-mt-1">Students will book 45-minute calls here</p>
-            </div>
-          )}
 
           {error && (
             <div style={{ padding: '12px 16px', borderLeft: '4px solid var(--ac-danger)', background: 'var(--ac-navy-800)', borderRadius: '0 var(--ac-radius-control) var(--ac-radius-control) 0' }}>

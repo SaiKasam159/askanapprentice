@@ -134,3 +134,21 @@ a.ac-card:hover { border-color: var(--ac-brass); background: var(--ac-navy-700);
 .ac-icon { width: 18px; height: 18px; flex: none; fill: none; stroke: currentColor; stroke-width: 2; stroke-linecap: round; stroke-linejoin: round; }
 .ac-icon--sm { width: 14px; height: 14px; }
 .ac-icon--lg { width: 22px; height: 22px; }
+
+/* Homepage hero: one column on small screens, questions below the headline. */
+@media (max-width: 860px) {
+  .ac-hero { grid-template-columns: 1fr !important; gap: 40px !important; }
+}
+
+/* `.ac a` and `.ac button` set `color: inherit` at a higher specificity than
+   `.ac-btn`, so primary buttons were rendering near-white on brass: about
+   1.6:1, well under the 4.5:1 minimum. Restate the colour so it wins. */
+.ac a.ac-btn,
+.ac button.ac-btn { color: var(--ac-navy-900); }
+
+.ac a.ac-btn--secondary,
+.ac button.ac-btn--secondary { color: var(--ac-text); }
+
+/* Headings carry no bottom margin, so a following lede sat against them. */
+.ac-h1 + .ac-lede,
+.ac-h2 + .ac-lede { margin-top: 20px; }
