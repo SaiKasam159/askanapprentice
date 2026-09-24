@@ -3,13 +3,16 @@
 import { useEffect, useState } from 'react'
 import { useRouter } from 'next/navigation'
 import { apiFetch } from '@/lib/session-client'
+import { CancelBooking } from '@/app/components/CancelBooking'
 
 
 interface Booking {
   id: string
   scheduled_at: string
   call_duration: number
+  price: number
   status: string
+  meeting_url: string | null
   students: { name: string; email: string }
 }
 
@@ -41,8 +44,8 @@ export default function MentorBookings() {
 
   if (loading) return <div className="ac-container ac-section"><p className="ac-muted">Loading...</p></div>
 
-  const upcomingBookings = bookings.filter(b => new Date(b.scheduled_at) > new Date())
-  const completedBookings = bookings.filter(b => new Date(b.scheduled_at) <= new Date())
+  const upcomingBookings = bookings.filter(b => new Date(b.scheduled_at) > new Date() && b.status !== 'cancelled')
+  const completedBookings = bookings.filter(b => new Date(b.scheduled_at) <= new Date() && b.status !== 'cancelled')
 
   return (
     <div className="ac-container ac-section">
@@ -61,7 +64,7 @@ export default function MentorBookings() {
           {upcomingBookings.length > 0 && (
             <div className="ac-mt-6">
               <h2 className="ac-h2">Upcoming calls</h2>
-              <div className="ac-rows ac-mt-4">
+              <ul className="ac-rows ac-mt-4" style={{ listStyle: 'none', padding: 0, margin: 0 }}>
                 {upcomingBookings.map(booking => (
                   <li key={booking.id} className="ac-card ac-card--sm">
                     <div>
@@ -69,17 +72,36 @@ export default function MentorBookings() {
                       <p className="ac-small ac-muted ac-mt-1">{new Date(booking.scheduled_at).toLocaleString()} • {booking.call_duration} min</p>
                       <p className="ac-small ac-mt-2">{booking.students.email}</p>
                     </div>
-                    <span className="ac-badge ac-badge--solid ac-mt-3">{booking.status}</span>
+                    {booking.meeting_url && (
+                      <a
+                        href={booking.meeting_url}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="ac-link ac-small ac-mt-2"
+                        style={{ display: 'inline-block' }}
+                      >
+                        Join the call
+                      </a>
+                    )}
+                    <div className="ac-mt-3" style={{ display: 'flex', alignItems: 'center', gap: '8px', flexWrap: 'wrap' }}>
+                      <span className="ac-badge ac-badge--solid">{booking.status}</span>
+                      <CancelBooking
+                        bookingId={booking.id}
+                        paid={Number(booking.price) > 0}
+                        onCancelled={() => setBookings(prev =>
+                          prev.map(b => b.id === booking.id ? { ...b, status: 'cancelled' } : b))}
+                      />
+                    </div>
                   </li>
                 ))}
-              </div>
+              </ul>
             </div>
           )}
 
           {completedBookings.length > 0 && (
             <div className="ac-mt-8">
               <h2 className="ac-h2">Completed calls</h2>
-              <div className="ac-rows ac-mt-4">
+              <ul className="ac-rows ac-mt-4" style={{ listStyle: 'none', padding: 0, margin: 0 }}>
                 {completedBookings.map(booking => (
                   <li key={booking.id} className="ac-card ac-card--sm">
                     <div>
@@ -88,7 +110,7 @@ export default function MentorBookings() {
                     </div>
                   </li>
                 ))}
-              </div>
+              </ul>
             </div>
           )}
         </>

@@ -4,6 +4,7 @@ import { useEffect, useState } from 'react'
 import { useRouter } from 'next/navigation'
 import Link from 'next/link'
 import { apiFetch } from '@/lib/session-client'
+import { CancelBooking } from '@/app/components/CancelBooking'
 import { SessionExpired } from '@/app/components/SessionExpired'
 
 
@@ -119,10 +120,18 @@ export default function StudentDashboard() {
                       </p>
                       <p className="ac-small ac-muted">{booking.call_duration} minutes • {Number(booking.price) > 0 ? `£${Number(booking.price).toFixed(2)}` : 'Free'}</p>
                     </div>
-                    <div>
-                      <span className={`ac-badge ${isUpcoming ? 'ac-badge--solid' : 'ac-badge--brass'}`}>
-                        {isUpcoming ? 'Upcoming' : 'Completed'}
+                    <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'flex-end', gap: '8px' }}>
+                      <span className={`ac-badge ${booking.status === 'cancelled' ? 'ac-badge--brass' : isUpcoming ? 'ac-badge--solid' : 'ac-badge--brass'}`}>
+                        {booking.status === 'cancelled' ? 'Cancelled' : isUpcoming ? 'Upcoming' : 'Completed'}
                       </span>
+                      {isUpcoming && booking.status !== 'cancelled' && (
+                        <CancelBooking
+                          bookingId={booking.id}
+                          paid={Number(booking.price) > 0}
+                          onCancelled={() => setBookings(prev =>
+                            prev.map(b => b.id === booking.id ? { ...b, status: 'cancelled' } : b))}
+                        />
+                      )}
                     </div>
                   </div>
                 </div>

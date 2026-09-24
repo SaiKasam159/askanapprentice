@@ -261,3 +261,68 @@ export async function sendBookingEmails(details: BookingEmailDetails): Promise<v
     }
   }))
 }
+
+export interface CancellationDetails extends BookingEmailDetails {
+  cancelledBy: 'student' | 'apprentice'
+  refunded: boolean
+}
+
+/** Tells the other party a call is off. Never throws, for the same reason as the confirmation. */
+export async function sendCancellationEmails(details: CancellationDetails): Promise<void> {
+  const studentZone = details.studentTimezone || 'Europe/London'
+  const byMentor = details.cancelledBy === 'apprentice'
+
+  const refundLine = details.refunded
+    ? 'Your £10 has been refunded. It usually reaches your account within five to ten working days.'
+    : 'Nothing was charged for this call.'
+
+  const messages = [
+    {
+      to: details.studentEmail,
+      subject: `Cancelled: your call with ${details.mentorName}`,
+      html: layout(
+        'Your call has been cancelled',
+        byMentor
+          ? `${details.mentorName} can no longer make this call. You can book someone else whenever suits you.`
+          : 'You cancelled this call.',
+        [
+          ['Was', formatWhen(details.scheduledAt, studentZone)],
+          ['Mentor', details.mentorName],
+        ],
+        null,
+        `${refundLine} Browse other mentors at ${APP_URL()}/directory`
+      ),
+    },
+    {
+      to: details.mentorEmail,
+      subject: `Cancelled: your call with ${details.studentName}`,
+      html: layout(
+        'A call has been cancelled',
+        byMentor
+          ? 'You cancelled this call. The slot is free again.'
+          : `${details.studentName} cancelled. The slot is free again for someone else to book.`,
+        [
+          ['Was', formatWhen(details.scheduledAt, details.mentorTimezone)],
+          ['Student', details.studentName],
+        ],
+        null,
+        `Your availability is unchanged. Adjust it at ${APP_URL()}/apprentice/availability`
+      ),
+    },
+  ]
+
+  if (!process.env.RESEND_API_KEY) {
+    console.warn('[email] RESEND_API_KEY not set; skipping cancellation emails for', details.bookingId)
+    return
+  }
+
+  const resend = getResend()
+  await Promise.all(messages.map(async message => {
+    try {
+      const { error } = await resend.emails.send({ from: senderAddress(), ...message })
+      if (error) console.error(`[email] cancellation to ${message.to} failed:`, error)
+    } catch (err) {
+      console.error(`[email] cancellation to ${message.to} threw:`, err)
+    }
+  }))
+}
