@@ -32,7 +32,10 @@ export default function Availability() {
         setWindows(data.windows)
         setTimezone(data.timezone)
       })
-      .catch(() => router.push('/apprentice/login'))
+      .catch(err => {
+        if (/signed in/i.test(err.message)) router.push('/apprentice/login')
+        else toast.error(err.message)
+      })
       .finally(() => setLoading(false))
   }, [router])
 

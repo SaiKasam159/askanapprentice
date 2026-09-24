@@ -86,12 +86,12 @@ export default function ApprenticeSignup() {
 
   return (
     <div className="ac-container ac-section">
-      <div className="ac-stack" style={{ maxWidth: '56rem', marginBottom: '48px' }}>
+      <div className="ac-stack" style={{ maxWidth: '34rem', margin: '0 auto 40px', textAlign: 'center' }}>
         <h1 className="ac-h1">Become a mentor</h1>
         <p className="ac-lede">Share your apprenticeship experience with people considering the same path.</p>
       </div>
 
-      <form onSubmit={handleSubmit} className="ac-card" style={{ maxWidth: '28rem' }}>
+      <form onSubmit={handleSubmit} className="ac-card" style={{ maxWidth: '28rem', margin: '0 auto' }}>
         <div className="ac-stack" style={{ '--gap': '24px' } as any}>
           <div className="ac-field">
             <label className="ac-label" htmlFor="name">Your name</label>
@@ -231,7 +231,7 @@ export default function ApprenticeSignup() {
         </div>
       </form>
 
-      <div className="ac-mt-8 ac-center" style={{ maxWidth: '56rem' }}>
+      <div className="ac-mt-8 ac-center" style={{ maxWidth: '34rem', margin: '32px auto 0' }}>
         <p className="ac-small ac-muted">
           Looking to book a call? <Link href="/signup" className="ac-link">Sign up as a student</Link>
         </p>

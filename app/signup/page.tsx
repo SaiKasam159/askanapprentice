@@ -104,12 +104,12 @@ export default function StudentSignup() {
 
   return (
     <div className="ac-container ac-section">
-      <div className="ac-stack" style={{ maxWidth: '56rem', marginBottom: '48px', '--gap': '12px' } as any}>
+      <div className="ac-stack" style={{ maxWidth: '34rem', margin: '0 auto 40px', textAlign: 'center', '--gap': '12px' } as any}>
         <h1 className="ac-h1">Book a call with a mentor</h1>
         <p className="ac-lede">Tell us about yourself and the sectors you're interested in. We'll help you find the right apprentice to talk to.</p>
       </div>
 
-      <form onSubmit={handleSubmit} className="ac-card" style={{ maxWidth: '28rem' }}>
+      <form onSubmit={handleSubmit} className="ac-card" style={{ maxWidth: '28rem', margin: '0 auto' }}>
         <div className="ac-stack" style={{ '--gap': '24px' } as any}>
           <div className="ac-field">
             <label className="ac-label" htmlFor="name">Your name</label>

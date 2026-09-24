@@ -58,18 +58,38 @@ export async function PUT(req: NextRequest) {
     await admin.from('apprentices').update({ timezone }).eq('id', session.userId)
   }
 
-  const { error: clearError } = await admin.from('availability').delete().eq('apprentice_id', session.userId)
-  if (clearError) {
-    console.error('Availability clear failed:', clearError)
-    return NextResponse.json({ error: `Could not save availability: ${clearError.message}` }, { status: 500 })
-  }
+  // Insert the new set before removing the old one. Deleting first meant a
+  // failed insert left the mentor with no availability at all.
+  const { data: existing } = await admin
+    .from('availability')
+    .select('id')
+    .eq('apprentice_id', session.userId)
 
   if (windows.length) {
-    const rows = windows.map((w: WindowInput) => ({ ...w, apprentice_id: session.userId }))
+    // Take only the three fields. Spreading the client's object carried back
+    // the `id` of windows it had loaded, and a newly added window has none --
+    // PostgREST then inserts an explicit NULL for it rather than letting the
+    // column default apply, so saving failed as soon as one window existed.
+    const rows = windows.map((w: WindowInput) => ({
+      apprentice_id: session.userId,
+      day_of_week: w.day_of_week,
+      start_minute: w.start_minute,
+      end_minute: w.end_minute,
+    }))
+
     const { error } = await admin.from('availability').insert(rows)
     if (error) {
       console.error('Availability insert failed:', error)
       return NextResponse.json({ error: `Could not save availability: ${error.message}` }, { status: 500 })
+    }
+  }
+
+  const oldIds = (existing ?? []).map(r => r.id)
+  if (oldIds.length) {
+    const { error } = await admin.from('availability').delete().in('id', oldIds)
+    if (error) {
+      // The new windows are already saved, so this is untidy rather than broken.
+      console.error('Could not remove replaced availability rows:', error)
     }
   }
 
